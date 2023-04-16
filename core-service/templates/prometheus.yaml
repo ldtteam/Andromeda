@@ -59,6 +59,11 @@ spec:
               annotations:
                 cert-manager.io/cluster-issuer: letsencrypt-production
                 nginx.ingress.kubernetes.io/ssl-redirect: "true"
+              tls:
+                - secretName: grafana-ingress-tls
+                  hosts:
+                    - grafana.cluster.ldtteam.com
+
     - repoURL: {{ .Values.repository.url }}
       path: charts/prometheus-extras
       targetRevision: HEAD
