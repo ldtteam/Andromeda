@@ -56,7 +56,6 @@ spec:
               hosts:
                 - grafana.cluster.ldtteam.com
               annotations:
-                kubernetes.io/ingress.class: nginx
                 cert-manager.io/cluster-issuer: letsencrypt-production
                 nginx.ingress.kubernetes.io/ssl-redirect: "true"
     - repoURL: {{ .Values.repository.url }}
