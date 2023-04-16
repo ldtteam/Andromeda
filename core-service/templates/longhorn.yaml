@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: longhorn
+  namespace: argocd
+spec:
+  project: default
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: longhorn-system
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+  sources:
+    - repoURL: https://charts.longhorn.io
+      chart: longhorn
+      targetRevision: 1.4.1
+      helm:
+        parameters:
+          - name: tolerations
+            value: "dedicated-storage=true:NoSchedule" # Allow longhorn to run on storage nodes
+        values: |-
+          longhornManager:
+            tolerations:
+              - key: "dedicated-storage"
+                operator: "Equal"
+                value: "true"
+                effect: "NoSchedule"
+          longhornDriver:
+            tolerations:
+              - key: "dedicated-storage"
+                operator: "Equal"
+                value: "true"
+                effect: "NoSchedule"
+    - repoURL: {{ .Values.repository.url }}
+      path: charts/longhorn-extras
+      targetRevision: HEAD
