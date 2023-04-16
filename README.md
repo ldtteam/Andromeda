@@ -14,3 +14,7 @@ It is deployed via the `core-service` application.
 2. Install ArgoCD
    1. Run: `helm repo add argoproj https://argoproj.github.io/argo-helm` to add the ArgoCD Helm repository
    2. Run: `helm install argocd argoproj/argo-cd -n argocd --create-namespace` to bootstrap ArgoCD
+
+### ArgoCD
+Once bootstrapped open ArgoCD using the commandline information shown after the installation.
+Then add the repository as an application and deploy it.
