@@ -1,0 +1,6 @@
+apiVersion: v2
+name: core-service
+description: This deploys the single core ArgoCD Application which deploys the rest of the applications.
+
+type: application
+version: 1.0.0

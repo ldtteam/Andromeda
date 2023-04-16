@@ -1,0 +1,3 @@
+domainName: argo.cluster.ldtteam.com
+ingress:
+  class: nginx

@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd
+  namespace: argocd
+spec:
+  project: default
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+  sources:
+    - repoURL: https://argoproj.github.io/argo-helm
+      chart: argo-cd
+      targetRevision: 5.29.1
+      helm:
+        values: |-
+          configs:
+            params:
+              server.insecure: true
+          redis-ha:
+            enabled: true
+          controller:
+            replicas: 1
+          server:
+            replicas: 3
+          repoServer:
+            replicas: 3
+          applicationSet:
+            replicaCount: 3
+    - repoURL: {{ .Values.repository.url }}
+      path: charts/argocd-extras
+      targetRevision: HEAD
+      helm:
+        parameters:
+          - name: domainName
+            value: argo.cluster.ldtteam.com

@@ -1,0 +1,5 @@
+apiVersion: v2
+name: argocd-extras
+description: The additional cluster resources needed to bootstrap ArgoCD
+type: application
+version: 1.0.0

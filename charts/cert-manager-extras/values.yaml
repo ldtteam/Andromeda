@@ -1,0 +1,3 @@
+email: acme@ldtteam.com
+ingress:
+  class: nginx
