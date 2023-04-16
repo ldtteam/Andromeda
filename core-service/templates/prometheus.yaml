@@ -7,7 +7,7 @@ spec:
   project: default
   destination:
     server: "https://kubernetes.default.svc"
-    namespace: argocd
+    namespace: prometheus
   syncPolicy:
     automated:
       prune: true
