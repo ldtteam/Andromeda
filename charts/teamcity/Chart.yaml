@@ -1,0 +1,5 @@
+apiVersion: v2
+name: teamcity
+description: TeamCity is a build management and continuous integration server
+type: application
+version: 0.1.0
