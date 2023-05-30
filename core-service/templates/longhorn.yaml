@@ -35,5 +35,5 @@ spec:
                 value: "true"
                 effect: "NoSchedule"
     - repoURL: {{ .Values.repository.url }}
-      path: charts/longhorn-extras
+      path: core-charts/longhorn-extras
       targetRevision: HEAD

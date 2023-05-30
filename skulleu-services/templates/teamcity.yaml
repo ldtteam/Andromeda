@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: skulleu-teamcity
+  namespace: argocd
+spec:
+  project: default
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: skulleu-teamcity
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+  sources:
+    - repoURL: https://charts.sandermann.cloud
+      chart: teamspeak
+      targetRevision: 3.13.7
+      helm:
+        values: |-
+          persistence:
+            enabled: true
+          service:
+            type: NodePort

@@ -65,7 +65,7 @@ spec:
                     - grafana.cluster.ldtteam.com
 
     - repoURL: {{ .Values.repository.url }}
-      path: charts/prometheus-extras
+      path: core-charts/prometheus-extras
       targetRevision: HEAD
       helm:
         parameters:

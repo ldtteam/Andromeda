@@ -33,7 +33,7 @@ spec:
           applicationSet:
             replicaCount: 3
     - repoURL: {{ .Values.repository.url }}
-      path: charts/argocd-extras
+      path: core-charts/argocd-extras
       targetRevision: HEAD
       helm:
         parameters:

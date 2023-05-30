@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: skulleu
-  namespace: skulleu
+  namespace: argocd
 spec:
   project: default
   destination:

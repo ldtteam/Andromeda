@@ -22,5 +22,5 @@ spec:
           - name: installCRDs
             value: "true"
     - repoURL: {{ .Values.repository.url }}
-      path: charts/cert-manager-extras
+      path: core-charts/cert-manager-extras
       targetRevision: HEAD
