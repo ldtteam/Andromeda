@@ -14,7 +14,7 @@ spec:
     syncOptions:
       - CreateNamespace=true
   sources:
-    - repoURL: https://charts.sandermann.cloud
+    - repoURL: http://charts.sandermann.cloud
       chart: teamspeak
       targetRevision: 3.13.7
       helm:
