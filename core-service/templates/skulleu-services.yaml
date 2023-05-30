@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: skulleu
+  namespace: skulleu
+spec:
+  project: default
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: skulleu
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+  sources:
+    - repoURL: {{ .Values.repository.url }}
+      path: skulleu-services
+      targetRevision: HEAD

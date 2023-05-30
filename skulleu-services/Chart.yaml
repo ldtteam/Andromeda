@@ -1,0 +1,6 @@
+apiVersion: v2
+name: skulleu-services
+description: Helm ArgoCD Services Specification for Skull EU
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
