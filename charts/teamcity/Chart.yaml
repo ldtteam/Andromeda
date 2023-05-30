@@ -3,3 +3,8 @@ name: teamcity
 description: TeamCity is a build management and continuous integration server
 type: application
 version: 0.1.0
+appVersion: "2022.10.3"
+dependencies:
+  - name: postgresql-ha
+    version: 11.5.2
+    repository: https://charts.bitnami.com/bitnami
