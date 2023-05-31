@@ -3,7 +3,7 @@ namespace: metallb-system
 ipPool:
   name: default
   ranges:
-    - 192.168.254.0./24
+    - 192.168.254.0/24
 
 bgp:
   asn:
