@@ -6,3 +6,4 @@ metadata:
 spec:
   addresses:
     {{ .Values.ipPool.ranges | toYaml | indent 4}}
+  autoAssign: true
