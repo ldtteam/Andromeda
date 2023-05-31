@@ -1,0 +1,18 @@
+namespace: metallb-system
+
+ipPool:
+  name: default
+  ranges:
+    - 192.168.254.0./24
+
+bgp:
+  asn:
+    mine: 64513
+    external: 64512
+  remotes:
+    - name: orion
+      address: 192.168.1.1
+    - name: bisect
+      address: 192.168.20.1
+    - name: hetzner-large
+      address: 192.168.30.1

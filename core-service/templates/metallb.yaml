@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cert-manager
+  namespace: argocd
+spec:
+  project: default
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: metallb-system
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+  sources:
+    - repoURL: https://metallb.github.io/metallb
+      chart: metallb
+      helm:
+        values: |-
+          prometheus:
+            scrapeAnnotations: true
+    - repoURL: {{ .Values.repository.url }}
+      path: core-charts/metallb-extras
+      targetRevision: HEAD
