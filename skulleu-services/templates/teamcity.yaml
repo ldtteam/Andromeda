@@ -21,3 +21,6 @@ spec:
         values: |-
           persistence:
             enabled: true
+          service:
+            annotations:
+                metallb.universe.tf/loadBalancerIPs: 192.168.254.0
