@@ -10,7 +10,5 @@ bgp:
     mine: 64513
     external: 64512
   remotes:
-    - name: bisect
-      address: 192.168.20.1
-    - name: hetzner-large
-      address: 192.168.30.1
+    - 192.168.20.1
+    - 192.168.30.1

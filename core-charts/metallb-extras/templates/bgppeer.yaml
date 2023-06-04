@@ -3,11 +3,14 @@
 apiVersion: metallb.io/v1beta2
 kind: BGPPeer
 metadata:
-  name: {{ .name}}
+  name: {{ . }}
   namespace: {{ $.Values.namespace }}
 spec:
   myASN: {{ $.Values.bgp.asn.mine }}
   peerASN: {{ $.Values.bgp.asn.external}}
-  peerAddress: {{ .address }}
+  peerAddress: {{ . }}
+  nodeSelectors:
+    - matchLabels:
+        ldtteam.com/ingress-host: {{ . }}
 ---
 {{- end}}
