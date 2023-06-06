@@ -1,0 +1,6 @@
+apiVersion: v2
+name: teamcity-server
+description: A Helm chart for deploy HA teamcity server
+type: application
+version: 2.2.0
+appVersion: "2023.05"
