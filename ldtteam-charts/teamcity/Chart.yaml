@@ -4,3 +4,9 @@ description: A Helm chart for deploy HA teamcity server
 type: application
 version: 2.2.0
 appVersion: "2023.05"
+
+dependencies:
+  - name: postgresql-ha
+    alias: postgres
+    version: 11.5.2
+    repository: https://charts.bitnami.com/bitnami

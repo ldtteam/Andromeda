@@ -1,13 +1,13 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: ldtteam
+  name: ldtteam-teamcity
   namespace: argocd
 spec:
   project: default
   destination:
     server: "https://kubernetes.default.svc"
-    namespace: ldtteam
+    namespace: ldtteam-teamcity
   syncPolicy:
     automated:
       prune: true
@@ -15,9 +15,5 @@ spec:
       - CreateNamespace=true
   sources:
     - repoURL: {{ .Values.repository.url }}
-      path: ldtteam-services
+      path: ldtteam-charts/teamcity
       targetRevision: HEAD
-      helm:
-        values: |-
-          repository:
-            url : {{ .Values.repository.url }}
