@@ -2,6 +2,8 @@ global:
   storageClass: longhorn
   postgresql:
     password: teamcity
+    postgresPassword: teamcity
+    repmgrPassword: teamcity
 
 image:
   repository: jetbrains/teamcity-server
