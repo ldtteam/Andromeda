@@ -126,6 +126,8 @@ configMap:
       </Server>
 
 postgresql:
+  pdb:
+    create: false
   password: teamcity
   repmgrPassword: teamcity
   volumePermissions:
@@ -133,6 +135,11 @@ postgresql:
     securityContext:
       enabled: false
       runAsUser: root
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      namespace: prometheus
   persistence:
     enabled: true
     storageClass: "longhorn"
