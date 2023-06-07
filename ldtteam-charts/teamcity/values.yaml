@@ -134,6 +134,7 @@ postgresql:
       enabled: false
       runAsUser: root
   persistence:
+    enabled: true
     storageClass: "longhorn"
     accessModes:
       - ReadWriteMany
