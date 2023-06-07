@@ -92,7 +92,7 @@ ephemeral:
         storage: 16Gi
 
 database:
-  host: "127.0.0.1"
+  host: "ldtteam-teamcity-postgres-pgpool"
   name: "teamcity"
   user: "teamcity"
   password: "password"
