@@ -3,7 +3,6 @@ global:
   postgresql:
     password: teamcity
     postgresPassword: teamcity
-    repmgrPassword: teamcity
 
 image:
   repository: jetbrains/teamcity-server
@@ -129,7 +128,6 @@ postgresql:
   pdb:
     create: false
   password: teamcity
-  repmgrPassword: teamcity
   volumePermissions:
     enabled: true
     securityContext:
