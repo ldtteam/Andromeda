@@ -21,4 +21,5 @@
 *.tmproj
 .vscode/
 
-charts/*.tgz
+charts/**/**.tgz
+**/charts/**/**.tgz
