@@ -71,7 +71,7 @@ pvc:
     helm.sh/resource-policy: keep
   storageClassName: longhorn
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
       storage: 50Gi
@@ -128,7 +128,7 @@ postgresql:
     enabled: true
     storageClass: "longhorn"
     accessModes:
-      - ReadWriteMany
+      - ReadWriteOnce
     size: 50Gi
 
 pgpool:
