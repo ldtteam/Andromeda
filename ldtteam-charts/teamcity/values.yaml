@@ -71,7 +71,7 @@ pvc:
     helm.sh/resource-policy: keep
   storageClassName: longhorn
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 50Gi
