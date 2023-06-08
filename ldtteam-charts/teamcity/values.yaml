@@ -108,6 +108,7 @@ configMap:
       </Server>
 
 postgresql:
+  password: postgres
   volumePermissions:
     enabled: true
     securityContext:
