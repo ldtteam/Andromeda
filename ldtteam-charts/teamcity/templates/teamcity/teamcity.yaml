@@ -44,6 +44,8 @@ spec:
         volumeMounts:
         - mountPath: /data/teamcity_server/datadir
           name: teamcity-server-data
+        - mountPath: /data/teamcity_server/backups
+          name: teamcity-server-backup
         {{- range $key, $value := $.Values.configMap.optConf }}
         - mountPath: /opt/teamcity/conf/{{ $key }}
           name: {{ $.Release.Name }}-opt-conf
@@ -73,7 +75,10 @@ spec:
           optional: false
       - name: teamcity-server-data
         persistentVolumeClaim:
-          claimName: {{ $.Values.pvc.name }}
+          claimName: {{ $.Values.dataVolume.name }}
+      - name: teamcity-server-backup
+        persistentVolumeClaim:
+          claimName: {{ $.Values.backupVolume.name }}
 {{- with $.Values.ephemeral }}
 {{- range $volume, $v_values := . }}
 {{- if not $v_values.enabled }}

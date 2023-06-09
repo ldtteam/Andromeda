@@ -62,7 +62,7 @@ pdb:
   enabled: true
   minAvailable: 1
 
-pvc:
+dataVolume:
   name: teamcity-server-data
   annotations:
     helm.sh/resource-policy: keep
@@ -72,6 +72,18 @@ pvc:
   resources:
     requests:
       storage: 50Gi
+
+backupVolume:
+  name: teamcity-server-backup
+  annotations:
+    helm.sh/resource-policy: keep
+  storageClassName: longhorn
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+
 
 database:
   host: "ldtteam-teamcity-postgres-pgpool"
