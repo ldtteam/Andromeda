@@ -1,5 +1,9 @@
 global:
   storageClass: longhorn
+  postgresql:
+    password: teamcity
+    repmgrPassword: teamcity
+    postgresPassword: teamcity
 
 image:
   repository: jetbrains/teamcity-server
@@ -120,7 +124,9 @@ configMap:
       </Server>
 
 postgresql:
-  password: postgres
+  password: teamcity
+  repmgrPassword: teamcity
+  postgresPassword: teamcity
   volumePermissions:
     enabled: true
     securityContext:
@@ -131,6 +137,9 @@ postgresql:
     accessModes:
       - ReadWriteOnce
     size: 50Gi
+
+pgpool:
+  adminPassword: teamcity
 
 initdbScripts:
   init.sql:|
