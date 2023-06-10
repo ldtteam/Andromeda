@@ -90,10 +90,36 @@ backupVolume:
 
 
 database:
-  host: "ldtteam-teamcity-postgres-pgpool"
-  name: "teamcity"
-  user: "teamcity"
-  password: "password"
+  postgresql:
+    password: teamcity
+    repmgrPassword: teamcity
+    postgresPassword: teamcity
+    volumePermissions:
+      enabled: true
+      securityContext:
+        enabled: false
+        runAsUser: root
+    persistence:
+      enabled: true
+      accessModes:
+        - ReadWriteOnce
+      size: 50Gi
+    livenessProbe:
+      initialDelaySeconds: 90
+      failureThreshold: 30
+    readinessProbe:
+      initialDelaySeconds: 60
+      failureThreshold: 15
+    startupProbe:
+      initialDelaySeconds: 60
+      failureThreshold: 30
+
+  pgpool:
+    adminPassword: teamcity
+
+  initdbScripts:
+    init.sql:|
+    GRANT admins TO postgres;
 
 configMap:
   optConf:
@@ -123,33 +149,3 @@ configMap:
         </Service>
       </Server>
 
-postgresql:
-  password: teamcity
-  repmgrPassword: teamcity
-  postgresPassword: teamcity
-  volumePermissions:
-    enabled: true
-    securityContext:
-      enabled: false
-      runAsUser: root
-  persistence:
-    enabled: true
-    accessModes:
-      - ReadWriteOnce
-    size: 50Gi
-  livenessProbe:
-    initialDelaySeconds: 90
-    failureThreshold: 30
-  readinessProbe:
-    initialDelaySeconds: 60
-    failureThreshold: 15
-  startupProbe:
-    initialDelaySeconds: 60
-    failureThreshold: 30
-
-pgpool:
-  adminPassword: teamcity
-
-initdbScripts:
-  init.sql:|
-  GRANT admins TO postgres;

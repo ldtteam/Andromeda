@@ -7,6 +7,6 @@ appVersion: "2023.05"
 
 dependencies:
   - name: postgresql-ha
-    alias: postgres
+    alias: database
     version: 11.5.2
     repository: https://charts.bitnami.com/bitnami
