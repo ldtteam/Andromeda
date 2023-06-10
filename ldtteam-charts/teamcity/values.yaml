@@ -1,9 +1,5 @@
 global:
   storageClass: longhorn
-  postgresql:
-    password: teamcity
-    repmgrPassword: teamcity
-    postgresPassword: teamcity
 
 image:
   repository: jetbrains/teamcity-server
@@ -88,39 +84,6 @@ backupVolume:
     requests:
       storage: 5Gi
 
-
-database:
-  postgresql:
-    password: teamcity
-    repmgrPassword: teamcity
-    postgresPassword: teamcity
-    volumePermissions:
-      enabled: true
-      securityContext:
-        enabled: false
-        runAsUser: root
-    persistence:
-      enabled: true
-      accessModes:
-        - ReadWriteOnce
-      size: 50Gi
-    livenessProbe:
-      initialDelaySeconds: 90
-      failureThreshold: 30
-    readinessProbe:
-      initialDelaySeconds: 60
-      failureThreshold: 15
-    startupProbe:
-      initialDelaySeconds: 60
-      failureThreshold: 30
-
-  pgpool:
-    adminPassword: teamcity
-
-  initdbScripts:
-    init.sql:|
-    GRANT admins TO postgres;
-
 configMap:
   optConf:
     server.xml: |-
@@ -149,3 +112,9 @@ configMap:
         </Service>
       </Server>
 
+database:
+  auth:
+    username: teamcity
+    password: teamcity
+    database: teamcity
+  architecture: replication
