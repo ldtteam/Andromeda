@@ -2,8 +2,7 @@ global:
   storageClass: longhorn
 
 image:
-  repository: jetbrains/teamcity-server
-  tag: latest
+  repository: jetbrains/hub
   pullPolicy: Always
   imagePullSecrets: []
 

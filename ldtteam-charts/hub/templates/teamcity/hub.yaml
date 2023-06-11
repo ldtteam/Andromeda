@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: hub
-          image: jetbrains/hub:latest
+          image: {{ $.Values.image.repository }}:{{ $.Values.image.tag | default $.Chart.AppVersion }}
           startupProbe: {{ $.Values.hub.startupProbe | toJson }}
           livenessProbe: {{ $.Values.hub.livenessProbe | toJson }}
           readinessProbe: {{ $.Values.hub.readinessProbe | toJson }}
