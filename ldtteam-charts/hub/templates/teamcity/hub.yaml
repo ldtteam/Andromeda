@@ -26,10 +26,10 @@ spec:
           {{- range $name, $volume := .Values.volumes }}
             - mountPath: {{ $volume.target }}
               name: {{ $name }}-hub
-          {{-end}}
+          {{- end }}
       volumes:
         {{- range $name, $volume := .Values.volumes }}
         - name: {{ $name }}-hub
           persistentVolumeClaim:
             claimName: {{ $name }}-hub
-        {{-end}}
+        {{- end }}
