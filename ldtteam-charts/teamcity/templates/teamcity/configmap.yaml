@@ -32,5 +32,5 @@ data:
 
     set -x
 
-    export TEAMCITY_SERVER_OPTS="-Dteamcity.server.nodeId=${$HOSTNAME} -Dteamcity.server.rootURL=http://${HOSTNAME} $TEAMCITY_SERVER_OPTS"
+    export TEAMCITY_SERVER_OPTS="-Dteamcity.server.nodeId=${HOSTNAME} -Dteamcity.server.rootURL=http://${HOSTNAME} $TEAMCITY_SERVER_OPTS"
     exec /run-services.sh
