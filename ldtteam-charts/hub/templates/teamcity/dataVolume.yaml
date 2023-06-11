@@ -1,4 +1,4 @@
-{{- with $.Values.volume.data }}
+{{- with $.Values.volumes.data }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

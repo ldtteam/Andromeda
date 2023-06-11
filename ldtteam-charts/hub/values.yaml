@@ -56,7 +56,7 @@ hub:
   tolerations: {}
   topologySpreadConstraints: {}
 
-volume:
+volumes:
   data:
     name: hub-data
     annotations:
