@@ -9,10 +9,13 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - teamcity.cluster.ldtteam.com
+        {{- range .Values.ingress.hosts }}
+        - {{ . }}
+        {{- end}}
       secretName: teamcity-default-tls
   rules:
-    - host: teamcity.cluster.ldtteam.com
+    {{- range .Values.ingress.hosts }}
+    - host: {{ . }}
       http:
         paths:
           - path: '/'
@@ -22,3 +25,4 @@ spec:
                 name: {{ $.Release.Name }}
                 port:
                   name: http
+    {{- end}}
