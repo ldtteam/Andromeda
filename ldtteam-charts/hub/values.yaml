@@ -28,21 +28,21 @@ hub:
       memory: 2048Mi
   startupProbe:
     httpGet:
-      path: /healthCheck/healthy
+      path: /hub
       port: http
       scheme: HTTP
     failureThreshold: 30
     periodSeconds: 30
   livenessProbe:
     httpGet:
-      path: /healthCheck/healthy
+      path: /hub
       port: http
       scheme: HTTP
     failureThreshold: 3
     periodSeconds: 30
   readinessProbe:
     httpGet:
-      path: /healthCheck/ready
+      path: /hub
       port: http
       scheme: HTTP
     failureThreshold: 10
