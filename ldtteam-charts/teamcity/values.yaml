@@ -17,10 +17,10 @@ ingress:
   hosts:
     - teamcity.cluster.ldtteam.com
     - teamcity.ldtteam.com
-    - teamcity.parchmentmc.org
-    - teamcity.parchmentmc.net
-    - buildsystem.parchmentmc.org
-    - buildsystem.parchmentmc.net
+#     - teamcity.parchmentmc.org
+#     - teamcity.parchmentmc.net
+#     - buildsystem.parchmentmc.org
+#     - buildsystem.parchmentmc.net
     - buildsystem.ldtteam.com
   tls:
     - secretName: teamcity-tls
