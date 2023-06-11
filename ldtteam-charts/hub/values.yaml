@@ -15,9 +15,7 @@ ingress:
     kubernetes.io/ingress.class: nginx
   hosts:
     - auth.cluster.ldtteam.com
-
-  tls:
-    - secretName: teamcity-tls
+    - auth.ldtteam.com
 
 ## Teamcity deployed by StateFulSet
 ## @param teamcity.resources default value for all nodes in sts
