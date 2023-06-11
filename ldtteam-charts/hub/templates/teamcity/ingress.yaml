@@ -12,7 +12,7 @@ spec:
         {{- range .Values.ingress.hosts }}
         - {{ . }}
         {{- end}}
-      secretName: teamcity-default-tls
+      secretName: {{ .Release.Name }}-default-tls
   rules:
     {{- range .Values.ingress.hosts }}
     - host: {{ . }}
