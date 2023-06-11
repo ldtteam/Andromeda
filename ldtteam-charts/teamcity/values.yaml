@@ -17,6 +17,7 @@ ingress:
   hosts:
     - teamcity.cluster.ldtteam.com
     - teamcity.ldtteam.com
+    - artifacts.teamcity.ldtteam.com
 #     - teamcity.parchmentmc.org
 #     - teamcity.parchmentmc.net
 #     - buildsystem.parchmentmc.org
