@@ -26,7 +26,13 @@ hub:
     requests:
       cpu: 100m
       memory: 2048Mi
-  startupProbe: ~
+  startupProbe:
+    httpGet:
+      path: /healthCheck/healthy
+      port: http
+      scheme: HTTP
+    failureThreshold: 30
+    periodSeconds: 30
   livenessProbe:
     httpGet:
       path: /healthCheck/healthy
@@ -39,8 +45,8 @@ hub:
       path: /healthCheck/ready
       port: http
       scheme: HTTP
-    failureThreshold: 2
-    periodSeconds: 10
+    failureThreshold: 10
+    periodSeconds: 30
   ports:
   - containerPort: 8080
     name: http
