@@ -98,10 +98,3 @@ volumes:
     resources:
       requests:
         storage: 2Gi
-
-database:
-  auth:
-    username: hub
-    password: hub
-    database: hub
-  architecture: replication
