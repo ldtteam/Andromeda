@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: hub
+          image: jetbrains/hub:latest
+          startupProbe: {{ $.Values.hub.startupProbe | toJson }}
+          livenessProbe: {{ $.Values.hub.livenessProbe | toJson }}
+          readinessProbe: {{ $.Values.hub.readinessProbe | toJson }}
+          ports: {{ $.Values.hub.ports | toJson}}
+          resources: {{ $.Values.hub.resources | toJson }}
+          volumeMounts:
+            - mountPath: /opt/hub
+              name: hub-data
+      volumes:
+        - name: hub-data
+          persistentVolumeClaim:
+            claimName: {{ $.Values.volumes.data.name }}

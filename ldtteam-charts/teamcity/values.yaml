@@ -32,7 +32,7 @@ teamcity:
   resources:
     requests:
       cpu: 100m
-      memory: 2048Mi
+      memory: 4096Mi
   ## @param teamcity.env default values for all nodes in sts
   env:
     TEAMCITY_SERVER_MEM_OPTS: -Xms2g -Xmx4g
