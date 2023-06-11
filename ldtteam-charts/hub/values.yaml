@@ -51,6 +51,7 @@ hub:
 
 volumes:
   data:
+    target: /opt/hub/data
     name: hub-data
     annotations:
       helm.sh/resource-policy: keep
@@ -60,6 +61,39 @@ volumes:
     resources:
       requests:
         storage: 20Gi
+  logs:
+    target: /opt/hub/logs
+    name: hub-logs
+    annotations:
+      helm.sh/resource-policy: keep
+    storageClassName: longhorn
+    accessModes:
+      - ReadWriteMany
+    resources:
+      requests:
+        storage: 5Gi
+  backups:
+    target: /opt/hub/backups
+    name: hub-backups
+    annotations:
+      helm.sh/resource-policy: keep
+    storageClassName: longhorn
+    accessModes:
+      - ReadWriteMany
+    resources:
+      requests:
+        storage: 20Gi
+  conf:
+    target: /opt/hub/conf
+    name: hub-conf
+    annotations:
+      helm.sh/resource-policy: keep
+    storageClassName: longhorn
+    accessModes:
+      - ReadWriteMany
+    resources:
+      requests:
+        storage: 2Gi
 
 database:
   auth:

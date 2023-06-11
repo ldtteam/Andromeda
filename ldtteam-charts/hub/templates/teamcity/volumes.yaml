@@ -1,0 +1,14 @@
+{{- range $name, $volume := .Values.volumes }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $name }}-hub
+  annotations:
+{{ $volume.annotations | toYaml | indent 4 }}
+spec:
+  accessModes: {{ $volume.accessModes | toJson }}
+  resources: {{ $volume.resources | toJson }}
+  storageClassName: {{ $volume.storageClassName }}
+  volumeMode: Filesystem
+{{- end }}

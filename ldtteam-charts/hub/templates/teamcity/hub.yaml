@@ -23,9 +23,13 @@ spec:
           ports: {{ $.Values.hub.ports | toJson}}
           resources: {{ $.Values.hub.resources | toJson }}
           volumeMounts:
-            - mountPath: /opt/hub
-              name: hub-data
+          {{- range $name, $volume := .Values.volumes }}
+            - mountPath: {{ $volume.target }}
+              name: {{ $name }}-hub
+          {{-end}}
       volumes:
-        - name: hub-data
+        {{- range $name, $volume := .Values.volumes }}
+        - name: {{ $name }}-hub
           persistentVolumeClaim:
-            claimName: {{ $.Values.volumes.data.name }}
+            claimName: {{ $name }}-hub
+        {{-end}}
