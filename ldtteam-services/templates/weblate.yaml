@@ -38,3 +38,4 @@ spec:
           emailTLS: false
           emailSSL: true
           defaultFromEmail: noreply@ldtteam.com
+          siteDomain: weblate.ldtteam.com
