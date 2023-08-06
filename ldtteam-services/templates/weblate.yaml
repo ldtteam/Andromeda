@@ -35,3 +35,5 @@ spec:
           emailHost: mail.ldtteam.com
           emailPort: 465
           existingSecret: weblate
+          emailTLS: false
+          emailSSL: true
