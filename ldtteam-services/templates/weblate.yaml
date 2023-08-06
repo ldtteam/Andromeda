@@ -37,3 +37,4 @@ spec:
           existingSecret: weblate
           emailTLS: false
           emailSSL: true
+          defaultFromEmail: noreply@ldtteam.com
