@@ -12,16 +12,12 @@ replicas: 3
 ingress:
   enabled: true
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
+    cert-manager.io/cluster-issuer: letsencrypt-production
     kubernetes.io/ingress.class: nginx
   hosts:
     - teamcity.cluster.ldtteam.com
     - teamcity.ldtteam.com
     - artifacts.teamcity.ldtteam.com
-#     - teamcity.parchmentmc.org
-#     - teamcity.parchmentmc.net
-#     - buildsystem.parchmentmc.org
-#     - buildsystem.parchmentmc.net
     - buildsystem.ldtteam.com
   tls:
     - secretName: teamcity-tls
