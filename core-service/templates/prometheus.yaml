@@ -51,6 +51,8 @@ spec:
                       requests:
                         storage: 10Gi
           grafana:
+            plugins:
+              - grafana-simple-json-datasource
             ingress:
               enabled: true
               ingressClassName: nginx
