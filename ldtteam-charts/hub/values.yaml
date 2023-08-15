@@ -65,9 +65,9 @@ volumes:
     resources:
       requests:
         storage: 20Gi
-  logs:
+  logs-new:
     target: /opt/hub/logs
-    name: hub-logs
+    name: hub-logs-new
     annotations:
       helm.sh/resource-policy: keep
     storageClassName: longhorn
