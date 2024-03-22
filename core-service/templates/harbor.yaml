@@ -19,8 +19,8 @@ spec:
       chart: harbor
       targetRevision: 1.14.0
       helm:
-        values: |
-          expose
+        values: |-
+          expose:
             ingress:
               hosts:
                 core: harbor.cluster.ldtteam.com
