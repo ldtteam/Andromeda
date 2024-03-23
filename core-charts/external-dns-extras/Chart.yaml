@@ -1,0 +1,5 @@
+apiVersion: v2
+name: external-dns-extras
+description: Configures the external dns system to use hetzner cloud dns
+type: application
+version: 0.1.0
