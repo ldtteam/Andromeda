@@ -22,6 +22,7 @@ spec:
         values: |-
           expose:
             ingress:
+              className: nginx
               hosts:
                 core: harbor.cluster.ldtteam.com
               annotations:
