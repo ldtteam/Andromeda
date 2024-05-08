@@ -89,7 +89,7 @@ volumes:
         storage: 20Gi
   conf:
     target: /opt/hub/conf
-    name: hub-conf
+    name: hub-conf-new
     annotations:
       helm.sh/resource-policy: keep
     storageClassName: longhorn
