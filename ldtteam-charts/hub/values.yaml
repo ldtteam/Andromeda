@@ -87,9 +87,9 @@ volumes:
     resources:
       requests:
         storage: 20Gi
-  conf:
+  conf-new:
     target: /opt/hub/conf
-    name: hub-conf-recreate
+    name: hub-conf-new
     annotations:
       helm.sh/resource-policy: keep
       ldtteam.com/recreate: "true"
