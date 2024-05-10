@@ -89,9 +89,10 @@ volumes:
         storage: 20Gi
   conf:
     target: /opt/hub/conf
-    name: hub-conf-new
+    name: hub-conf-recreate
     annotations:
       helm.sh/resource-policy: keep
+      ldtteam.com/recreate: "true"
     storageClassName: longhorn
     accessModes:
       - ReadWriteMany
