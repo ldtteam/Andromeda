@@ -55,9 +55,9 @@ hub:
   topologySpreadConstraints: {}
 
 volumes:
-  data-rebuild:
+  data-older:
     target: /opt/hub/data
-    name: hub-data-rebuild
+    name: hub-data-older
     annotations:
       helm.sh/resource-policy: keep
     storageClassName: longhorn
@@ -66,9 +66,9 @@ volumes:
     resources:
       requests:
         storage: 20Gi
-  logs-rebuild:
+  logs-older:
     target: /opt/hub/logs
-    name: hub-logs-rebuild
+    name: hub-logs-older
     annotations:
       helm.sh/resource-policy: keep
     storageClassName: longhorn
@@ -88,9 +88,9 @@ volumes:
     resources:
       requests:
         storage: 20Gi
-  conf-rebuild:
+  conf-older:
     target: /opt/hub/conf
-    name: hub-conf-rebuild
+    name: hub-conf-older
     annotations:
       helm.sh/resource-policy: keep
       ldtteam.com/recreate: "true"
