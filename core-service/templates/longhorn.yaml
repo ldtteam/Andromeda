@@ -34,3 +34,6 @@ spec:
                 operator: "Equal"
                 value: "true"
                 effect: "NoSchedule"
+    - repoURL: {{ .Values.repository.url }}
+      path: core-charts/longhorn-extras
+      targetRevision: HEAD
