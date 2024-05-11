@@ -5,6 +5,7 @@ image:
   repository: jetbrains/hub
   pullPolicy: Always
   imagePullSecrets: []
+  tag: 2022.3.15362
 
 replicas: 3
 
