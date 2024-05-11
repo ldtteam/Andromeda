@@ -7,4 +7,4 @@ metadata:
     app.kubernetes.io/part-of: longhorn
 type: Opaque
 data:
-  AWS_ENDPOINTS: https://s3.us-west-002.backblazeb2.com
+  AWS_ENDPOINTS: aHR0cHM6Ly9zMy51cy13ZXN0LTAwMi5iYWNrYmxhemViMi5jb20K
