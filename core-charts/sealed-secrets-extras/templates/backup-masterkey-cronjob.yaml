@@ -20,13 +20,13 @@ spec:
             - ./execute.sh
             volumeMounts:
               - name: scripts
-                mountPath: /scripts
+                mountPath: /scripts/execute.sh
                 subPath: execute.sh
               - name: scripts
-                mountPath: /scripts
+                mountPath: /scripts/create-master-key-backup.sh
                 subPath: create-master-key-backup.sh
               - name: scripts
-                mountPath: /scripts
+                mountPath: /scripts/upload-to-bucket.sh
                 subPath: upload-to-bucket.sh
             env:
               - name: S3_BUCKET
