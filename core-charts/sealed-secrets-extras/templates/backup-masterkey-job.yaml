@@ -43,6 +43,7 @@ spec:
         - name: scripts
           configMap:
             name: sealed-secrets-scripts
+            defaultMode: 0777
   backoffLimit: 4
   completions: 1
   parallelism: 1

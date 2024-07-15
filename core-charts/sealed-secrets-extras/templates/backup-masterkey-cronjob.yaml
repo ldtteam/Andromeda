@@ -48,4 +48,5 @@ spec:
             - name: scripts
               configMap:
                 name: sealed-secrets-scripts
+                defaultMode: 0777
 
