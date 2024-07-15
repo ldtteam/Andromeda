@@ -34,6 +34,22 @@ spec:
                 operator: "Equal"
                 value: "true"
                 effect: "NoSchedule"
+
+          persistence:
+            defaultClassReplicaCount: 3
+
+          csi:
+            attacherReplicaCount: 1
+            provisionerReplicaCount: 1
+            resizerReplicaCount: 1
+            snapshotterReplicaCount: 1
+
+          defaultSettings:
+            replicaSoftAntiAffinity: true
+            defaultReplicaCount: 3
+            replicaZoneSoftAntiAffinity: true
+            backupTarget: s3://ldtteam@backblaze/prod/longhorn
+            backupTargetCredentialSecret: backblaze-backup-credentials
     - repoURL: {{ .Values.repository.url }}
       path: core-charts/longhorn-extras
       targetRevision: HEAD
