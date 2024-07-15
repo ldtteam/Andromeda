@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sealed-secrets-scripts
+  namespace: kube-system
+data:
+  upload-to-bucket.sh: |
+    #!/bin/bash
+
+    file=$1
+    
+    bucket=${S3_BUCKET:-bucket}
+    host=${S3_HOST:-s3.amazonaws.com}
+    
+    s3_key=${S3_KEY:-secret key}
+    s3_secret=${S3_SECRET:-secret token}
+
+    base_file=`basename ${file}`
+    resource="/${bucket}/${base_file}"
+    content_type="application/octet-stream"
+    date=`date -R`
+    _signature="PUT\n\n${content_type}\n${date}\n${resource}"
+    signature=`echo -en ${_signature} | openssl sha1 -hmac ${s3_secret} -binary | base64`
+
+    curl -v -X PUT -T "${file}" \
+              -H "Host: $host" \
+              -H "Date: ${date}" \
+              -H "Content-Type: ${content_type}" \
+              -H "Authorization: AWS ${s3_key}:${signature}" \
+              https://$host${resource}
+  create-master-key-backup.sh: |
+    #!/bin/bash
+
+    # We need to export the secrets that hold the master key
+    # to a file so that we can back it up to a secure location
+    # and restore it if needed.
+    
+    kubectl get secret -n kube-system -l sealedsecrets.bitnami.com/sealed-secrets-key -o yaml > main.key
+  execute.sh: |
+    #!/bin/bash
+    # export the master key
+    ./create-master-key-backup.sh
+    
+    # upload the master key to a secure location
+    ./upload-to-bucket.sh main.key

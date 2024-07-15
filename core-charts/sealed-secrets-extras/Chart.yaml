@@ -1,0 +1,7 @@
+apiVersion: v2
+name: sealed-secrets-extras
+description: Extra resources for the sealed-secrets subsystem
+
+type: application
+version: 0.1.0
+appVersion: "1.16.0"

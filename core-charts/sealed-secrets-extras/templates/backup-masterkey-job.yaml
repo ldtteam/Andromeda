@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: backup-masterkey
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      containers:
+      - name: backup-masterkey
+        image: bitnami/kubectl:1.21
+        command: ["/bin/sh", "-c"]
+        workingDir: /scripts
+        args:
+        - ./execute.sh
+        volumeMounts:
+          - name: scripts
+            mountPath: /scripts
+            subPath: execute.sh
+          - name: scripts
+            mountPath: /scripts
+            subPath: create-master-key-backup.sh
+          - name: scripts
+            mountPath: /scripts
+            subPath: upload-to-bucket.sh
+        env:
+          - name: S3_BUCKET
+            value: "ldtteam-key-backup"
+          - name: S3_HOST
+            value: "s3.us-west-002.backblazeb2.com"
+          - name: S3_KEY
+            valueFrom:
+              secretKeyRef:
+                key: sealed-secrets-master-backups-data
+                name: key-id
+          - name: S3_SECRET
+            valueFrom:
+              secretKeyRef:
+                key: sealed-secrets-master-backups-data
+                name: application-key
+      restartPolicy: OnFailure
+      volumes:
+        - name: scripts
+          configMap:
+            name: sealed-secrets-scripts
+  backoffLimit: 4
+  completions: 1
+  parallelism: 1
+  ttlSecondsAfterFinished: 600

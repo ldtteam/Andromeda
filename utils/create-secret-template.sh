@@ -14,34 +14,65 @@ SERVICE_NAME=$2
 SECRET_NAME=$3
 SECRET_KEY=$4
 
-# Check if service type is provided
+# Check if service type and name are provided
 if [ -z "${SERVICE_TYPE}" ]; then
     echo "Service type is not provided."
     exit 1
 fi
 
-# Check if service name is provided
 if [ -z "${SERVICE_NAME}" ]; then
     echo "Service name is not provided."
     exit 2
 fi
 
-# Check if secret name is provided
 if [ -z "${SECRET_NAME}" ]; then
     echo "Secret name is not provided."
     exit 3
 fi
 
-# Check if secret key is provided
-if [ -z "${SECRET_KEY}" ]; then
-    echo "Secret key is not provided."
-    exit 4
-fi
+# Initialize FROM_LITERAL variable
+FROM_LITERAL=""
 
-# Request secret value from user
-echo "Enter secret value for ${SECRET_NAME}.${SECRET_KEY}:"
-# shellcheck disable=SC2162
-read -s SECRET_VALUE
+# If neither secret name nor key is provided, ask for key-value pairs
+# Check for additional parameters beyond the initial four
+if [ $# -gt 3 ]; then
+    # Ensure an even number of additional parameters for key-value pairs
+    if [ $(( ($# - 3) % 2 )) -ne 0 ]; then
+        echo "Error: Missing value for the last secret key."
+        exit 5
+    fi
+
+    # Process additional key-value pairs
+    for (( i=4; i<=$#; i+=2 ))
+    do
+        KEY=${!i}
+        let "VAL_INDEX = i + 1"
+        VALUE=${!VAL_INDEX}
+        FROM_LITERAL="$FROM_LITERAL --from-literal=$KEY=$VALUE"
+    done
+elif [ -z "${SECRET_KEY}" ]; then
+    echo "Enter the number of key-value pairs for the secret:"
+    read -r PAIR_COUNT
+
+    if ! [[ "$PAIR_COUNT" =~ ^[0-9]+$ ]]; then
+        echo "Please enter a valid number."
+        exit 4
+    fi
+
+    for (( i=1; i<=PAIR_COUNT; i++ ))
+    do
+        echo "Enter key #$i:"
+        read -r KEY
+        echo "Enter value for $KEY:"
+        read -r VALUE
+        FROM_LITERAL="$FROM_LITERAL --from-literal=$KEY=$VALUE"
+    done
+else
+    # Request secret value from user for the single key-value pair
+    echo "Enter secret value for ${SECRET_NAME}.${SECRET_KEY}:"
+    read -r -s SECRET_VALUE
+    FROM_LITERAL="--from-literal=${SECRET_KEY}=${SECRET_VALUE}"
+fi
 
 # Find the parent directory of this script
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -51,6 +82,10 @@ PROJECT_DIR=$(realpath "${SCRIPT_DIR}/../")
 # Set up paths
 SERVICE_TYPE_DIR="${PROJECT_DIR}/${SERVICE_TYPE}-charts"
 APPLICATION_SERVICES_DIR="${PROJECT_DIR}/${SERVICE_TYPE}-services"
+# Check if we are a core service type
+if [ "${SERVICE_TYPE}" == "core" ]; then
+    APPLICATION_SERVICES_DIR="${PROJECT_DIR}/core-service"
+fi
 SERVICE_NAME_DIR="${SERVICE_TYPE_DIR}/${SERVICE_NAME}-extras"
 TEMPLATE_DIR="${SERVICE_NAME_DIR}/templates"
 SECRET_FILE="${TEMPLATE_DIR}/${SECRET_NAME}.yaml"
@@ -85,12 +120,11 @@ if [ -z "${SERVICE_NAMESPACE}" ]; then
     exit 2
 fi
 
-
 # Ensure the template directory exists
 mkdir -p "${TEMPLATE_DIR}"
 
 # Create the secret file
-kubectl create secret generic -n "${SERVICE_NAMESPACE}" "${SECRET_NAME}" --dry-run=client --from-literal="${SECRET_KEY}=${SECRET_VALUE}" -o yaml | kubeseal --format yaml > "$SECRET_FILE"
+kubectl create secret generic -n "${SERVICE_NAMESPACE}" "${SECRET_NAME}" --dry-run=client $FROM_LITERAL -o yaml | kubeseal --format yaml > "$SECRET_FILE"
 
 # Append the application marker labels:
 echo "      labels:" >> "$SECRET_FILE"
