@@ -11,6 +11,9 @@ spec:
         image: bitnami/kubectl:1.21
         command: ["/bin/sh", "-c"]
         workingDir: /scripts
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsUser: 0
         args:
         - ./execute.sh
         volumeMounts:
