@@ -12,7 +12,7 @@ data:
     b2 account authorize $S3_KEY $S3_SECRET
 
     # We upload the file to the bucket
-    b2 upload-file $S3_BUCKET $1 $(basename $1)
+    b2 file upload $S3_BUCKET $1 $(basename $1)
 
   create-master-key-backup.sh: |
     #!/bin/bash
