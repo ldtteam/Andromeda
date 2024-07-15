@@ -34,12 +34,13 @@ data:
     # We need to export the secrets that hold the master key
     # to a file so that we can back it up to a secure location
     # and restore it if needed.
-    
-    kubectl get secret -n kube-system -l sealedsecrets.bitnami.com/sealed-secrets-key -o yaml > main.key
+
+    mkdir -p /keys
+    kubectl get secret -n kube-system -l sealedsecrets.bitnami.com/sealed-secrets-key -o yaml > /keys/main.key
   execute.sh: |
     #!/bin/bash
     # export the master key
     ./create-master-key-backup.sh
     
     # upload the master key to a secure location
-    ./upload-to-bucket.sh main.key
+    ./upload-to-bucket.sh /keys/main.key
