@@ -5,14 +5,11 @@ metadata:
   namespace: kube-system
 data:
   upload-to-bucket.sh: |
-    APPLICATION_KEY = $S3_SECRET
-    KEY_ID = $S3_KEY
-
     # Install backblaze b2
     curl -L 'https://github.com/Backblaze/B2_Command_Line_Tool/releases/latest/download/b2-linux' -o 'b2' && chmod +x b2 && mv b2 /usr/local/bin/
 
     # We upload to backblaze b2
-    b2 authorize account $KEY_ID $APPLICATION_KEY
+    b2 authorize account $S3_KEY $S3_SECRET
 
     # We upload the file to the bucket
     b2 upload-file $S3_BUCKET $1 $(basename $1)
