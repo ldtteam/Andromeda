@@ -31,13 +31,13 @@ spec:
           - name: S3_KEY
             valueFrom:
               secretKeyRef:
-                key: sealed-secrets-master-backups-data
-                name: key-id
+                name: sealed-secrets-master-backups-data
+                key: key-id
           - name: S3_SECRET
             valueFrom:
               secretKeyRef:
-                key: sealed-secrets-master-backups-data
-                name: application-key
+                name: sealed-secrets-master-backups-data
+                key: application-key
       restartPolicy: OnFailure
       volumes:
         - name: scripts
