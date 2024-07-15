@@ -9,7 +9,7 @@ data:
     curl -L 'https://github.com/Backblaze/B2_Command_Line_Tool/releases/latest/download/b2-linux' -o 'b2' && chmod +x b2 && mv b2 /usr/local/bin/
 
     # We upload to backblaze b2
-    b2 authorize account $S3_KEY $S3_SECRET
+    b2 account authorize $S3_KEY $S3_SECRET
 
     # We upload the file to the bucket
     b2 upload-file $S3_BUCKET $1 $(basename $1)
