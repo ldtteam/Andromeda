@@ -5,29 +5,18 @@ metadata:
   namespace: kube-system
 data:
   upload-to-bucket.sh: |
-    #!/bin/bash
+    APPLICATION_KEY = $S3_SECRET
+    KEY_ID = $S3_KEY
 
-    file=$1
-    
-    bucket=${S3_BUCKET:-bucket}
-    host=${S3_HOST:-s3.amazonaws.com}
-    
-    s3_key=${S3_KEY:-secret key}
-    s3_secret=${S3_SECRET:-secret token}
+    # Install backblaze b2
+    curl -L 'https://github.com/Backblaze/B2_Command_Line_Tool/releases/latest/download/b2-linux' -o 'b2' && chmod +x b2 && mv b2 /usr/local/bin/
 
-    base_file=`basename ${file}`
-    resource="/${bucket}/${base_file}"
-    content_type="application/octet-stream"
-    date=`date -R`
-    _signature="PUT\n\n${content_type}\n${date}\n${resource}"
-    signature=`echo -en ${_signature} | openssl sha1 -hmac ${s3_secret} -binary | base64`
+    # We upload to backblaze b2
+    b2 authorize account $KEY_ID $APPLICATION_KEY
 
-    curl -v -X PUT -T "${file}" \
-              -H "Host: $host" \
-              -H "Date: ${date}" \
-              -H "Content-Type: ${content_type}" \
-              -H "Authorization: AWS ${s3_key}:${signature}" \
-              https://$host${resource}
+    # We upload the file to the bucket
+    b2 upload-file $S3_BUCKET $1 $(basename $1)
+
   create-master-key-backup.sh: |
     #!/bin/bash
 
