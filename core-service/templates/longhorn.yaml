@@ -48,7 +48,7 @@ spec:
             replicaSoftAntiAffinity: true
             defaultReplicaCount: 3
             replicaZoneSoftAntiAffinity: true
-            backupTarget: s3://ldtteam@backblaze/prod/longhorn
+            backupTarget: s3://ldtteam-cluster-backup@backblaze/prod/longhorn
             backupTargetCredentialSecret: backblaze-backup-credentials
     - repoURL: {{ .Values.repository.url }}
       path: core-charts/longhorn-extras
