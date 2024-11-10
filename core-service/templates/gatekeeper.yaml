@@ -17,3 +17,14 @@ spec:
     - repoURL: https://open-policy-agent.github.io/gatekeeper/charts
       chart: gatekeeper
       targetRevision: v3.17.0
+      helm:
+        valuesObject:
+          postInstall:
+            labelNamespace:
+              extraRules:
+                - apiGroups:
+                    - management.cattle.io
+                  resources:
+                    - projects
+                  verbs:
+                    - updatepsa
