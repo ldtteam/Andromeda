@@ -1,0 +1,53 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ldtteam-arc-runners
+  namespace: argocd
+spec:
+  project: default
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: ldtteam-arc-runners
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+  sources:
+    - repoURL: ghcr.io/actions/actions-runner-controller-charts
+      chart: gha-runner-scale-set
+      targetRevision: "0.9.3"
+      helm:
+        releaseName: ldtteam-runner
+        valuesObject:
+          githubConfigUrl: https://github.com/ldtteam
+          githubConfigSecret: gh-runner-app-credentials
+
+          # Keep exactly one runner alive
+          maxRunners: 100
+          minRunners: 1
+
+          containerMode:
+            type: "kubernetes"
+
+          template:
+            spec: 
+              containers:
+                - name: runner
+                  image: "ghcr.io/quipper/actions-runner:main"
+                  env:
+                    - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
+                      value: "false"
+              securityContext:
+                fsGroup: 1001
+
+          controllerServiceAccount:
+            namespace: "arc-systems"
+            name: "arc-runners-controller-gha-rs-controller"
+
+    - repoURL: {{ .Values.repository.url }}
+      path: ldtteam-charts/arc-runners-extras
+      targetRevision: HEAD
+      helm:
+        valuesObject:
+          controllerNamespace: "arc-systems"
