@@ -23,6 +23,8 @@ spec:
           githubConfigUrl: https://github.com/ldtteam
           githubConfigSecret: gh-runner-app-credentials
 
+          runnerGroup: "cluster"
+
           # Keep exactly one runner alive
           maxRunners: 100
           minRunners: 1
