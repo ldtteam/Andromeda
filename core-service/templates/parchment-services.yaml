@@ -1,13 +1,13 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: ldtteam
+  name: parchment
   namespace: argocd
 spec:
   project: default
   destination:
     server: "https://kubernetes.default.svc"
-    namespace: ldtteam
+    namespace: parchment
   syncPolicy:
     automated:
       prune: true
@@ -15,7 +15,7 @@ spec:
       - CreateNamespace=true
   sources:
     - repoURL: https://github.com/ParchmentMC/Atlas
-      path: ldtteam-services
+      path: parchment-services
       targetRevision: HEAD
       helm:
         values: |-
