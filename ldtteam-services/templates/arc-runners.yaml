@@ -29,17 +29,12 @@ spec:
 
           containerMode:
             type: "kubernetes"
-
-          template:
-            spec: 
-              containers:
-                - name: runner
-                  image: "ghcr.io/quipper/actions-runner:main"
-                  env:
-                    - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
-                      value: "false"
-              securityContext:
-                fsGroup: 1001
+            kubernetesModeWorkVolumeClaim:
+              accessModes: [ "ReadWriteOnce" ]
+              storageClassName: "longhorn"
+              resources:
+                requests:
+                  storage: 5Gi
 
           controllerServiceAccount:
             namespace: "arc-systems"
