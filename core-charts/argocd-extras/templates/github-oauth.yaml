@@ -2,14 +2,14 @@
 apiVersion: bitnami.com/v1alpha1
 kind: SealedSecret
 metadata:
+  creationTimestamp: null
   name: github-oauth
   namespace: argocd
 spec:
   encryptedData:
-    dex.github.clientSecret: AgBi86b3bzIsW/k2l8bDk1wlAptcZrxYB8DfaKhzp+V1ESZgnSZyG5khR3SwBZJ8TaEefQYK0FNjMUUgYKazXZCvgKl/4DRyrAWiRdd7XcbQg97BPOdbB3FVlOyJPVPNFQTFdWZ/PVIW9jxT1SVQfkznREb/5LOi6FHLam0a9KNTKfYcn3/CchI2yVU50ydipT0z4hin7DeSNFnXUnzFcsxHSH795FaeqSFoXFFZbho5ZWSw+t/G3KBdOQoskeynPS1hxz6Dajd9V9w8XGP0ud6NEmqBZ8QwhKb+vtcqN3th5Tm0Dc+vPGOGswNClOoCzn5wZhdhsaA3O7lFcYpSANJ1Hc0d+5nBTyhhjtCnBLi2vE7L6Y8NmS9DZwQbXYAW6ABjgnlr6tsyjs7ebAtUlVCE+85stEK0LJNC0k1yxKgtDuuF9If7wcMrphpGDOp1+lBIPiFt6A2yApRZ0mfkvvcECb3iTd6PjaKTOAZQrHRn8zJKxBIGKfLtE88YoRH6EIg5g8ppJAhvjZfj+BRlQtMnLLf9QwdMVpTTjDJIc9YkaxO1EaxL/rGMtkAndXPmpG1jZho+9i640TGJetYYqmi6kcWMXOYAgVthbo5eqh3S5s3MzT74/JGpBt2lsdvICgx4EQM0fubgW0YLmtnFosES1alc202+S6oXYxHqbVHGdPvZhslOxBUFH/xcVmdLPRf/lg9akck5F/kk0aY/WnKe+YLJHNbvFJCCrFjqFbJl1whXmhkYO1omcVo=
+    dex.github.clientSecret: AgCuRlmxzxmcgY/Mif7t/0kAqlTEYtOETJqODm0DhGaU6qzKEWaAFjNJtcwmDdo/MBua9TouMYDV2HZ9vquvqjdFPj911/MjPX5o+TiHFQfNLL2mOydH7XW5wy/xDy6rkH1vpA7YSlMQv6gUmkLxQ44o357GIeJ8/FfRMhpstyz4JQItLMVqeAZeXYECzXTDl5SL3Jb/UjMjHI5lU06N8EBaGA80OCoEarhpR+070/ewFzhj6kgqXUaY10OpENeYjmAD2rL1S/I24EKMGv2TCcEl+MTp43oCDeerVG244gOH8KP/q/OdQO/SdaxMOZdsQDipDw12i4jb8p0dOMciGYCEuqq+IAqfj0mu7/dB94A5l/EoqqeVKUryJPlz6aUdsz9LMYpbb+zqHYIYgHVQZcFVwWCs5jUxVZ9QGHM5iwPfRwTYlr72LJOmFWPLQeJbmcnhUErPcTp1q2IyLPjPzUOFHP23OVvxr2eDntaNnl53ZtL88eNd27Fnl1BWQrt8SFAuSGWyEujz27x3/z9ItCZT5uFX2ybISSSryMMA0/vOZ1gSfnmG+lm5RwdM8+eFBttUNANHO0lL2D87QOSx2hmAV83JHK65qq5ypPVsfvMapIVQPHkKWyH7Dv0+Whwz5h8XiQJAIGZX+UpSjyZcCqYT+y48ABzQSVU/vFfkRqij22iYWoujzZWbTSMqu+ZBFvXu6TPg2/pKU9Np44GUEmTrvnh+rHxs2W542SMnOgjQKjPef9jDjH5t
   template:
     metadata:
+      creationTimestamp: null
       name: github-oauth
       namespace: argocd
-      labels:
-        app.kubernetes.io/part-of: argocd
