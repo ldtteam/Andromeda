@@ -18,10 +18,31 @@ spec:
       chart: argo-cd
       targetRevision: 7.7.1
       helm:
-        values: |-
+        valuesObject:
           configs:
             params:
               server.insecure: true
+            cm:
+              url: https://argo.cluster.ldtteam.com
+              application.instanceLabelKey: argocd.argoproj.io/instance
+              admin.enabled: true
+              exec.enabled: true
+              dex.config: |
+                connectors:
+                  # GitHub example
+                  - type: github
+                    id: github
+                    name: GitHub
+                    config:
+                      clientID: Ov23lipfXF8e0zgVR5i6
+                      clientSecret: $github-oauth:dex.github.clientSecret
+                      orgs:
+                      - name: ldtteam
+                      - name: parchmentmc
+            rbac:
+              policy.csv: |
+                g, ldtteam:cluster-admins, role:admin
+                g, parchmentmc:toolchain, role:admin
           redis-ha:
             enabled: true
           controller:

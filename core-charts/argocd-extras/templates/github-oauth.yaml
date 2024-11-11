@@ -1,0 +1,15 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: github-oauth
+  namespace: argocd
+spec:
+  encryptedData:
+    dex.github.clientSecret: AgBi86b3bzIsW/k2l8bDk1wlAptcZrxYB8DfaKhzp+V1ESZgnSZyG5khR3SwBZJ8TaEefQYK0FNjMUUgYKazXZCvgKl/4DRyrAWiRdd7XcbQg97BPOdbB3FVlOyJPVPNFQTFdWZ/PVIW9jxT1SVQfkznREb/5LOi6FHLam0a9KNTKfYcn3/CchI2yVU50ydipT0z4hin7DeSNFnXUnzFcsxHSH795FaeqSFoXFFZbho5ZWSw+t/G3KBdOQoskeynPS1hxz6Dajd9V9w8XGP0ud6NEmqBZ8QwhKb+vtcqN3th5Tm0Dc+vPGOGswNClOoCzn5wZhdhsaA3O7lFcYpSANJ1Hc0d+5nBTyhhjtCnBLi2vE7L6Y8NmS9DZwQbXYAW6ABjgnlr6tsyjs7ebAtUlVCE+85stEK0LJNC0k1yxKgtDuuF9If7wcMrphpGDOp1+lBIPiFt6A2yApRZ0mfkvvcECb3iTd6PjaKTOAZQrHRn8zJKxBIGKfLtE88YoRH6EIg5g8ppJAhvjZfj+BRlQtMnLLf9QwdMVpTTjDJIc9YkaxO1EaxL/rGMtkAndXPmpG1jZho+9i640TGJetYYqmi6kcWMXOYAgVthbo5eqh3S5s3MzT74/JGpBt2lsdvICgx4EQM0fubgW0YLmtnFosES1alc202+S6oXYxHqbVHGdPvZhslOxBUFH/xcVmdLPRf/lg9akck5F/kk0aY/WnKe+YLJHNbvFJCCrFjqFbJl1whXmhkYO1omcVo=
+  template:
+    metadata:
+      name: github-oauth
+      namespace: argocd
+      labels:
+        app.kubernetes.io/part-of: argocd
