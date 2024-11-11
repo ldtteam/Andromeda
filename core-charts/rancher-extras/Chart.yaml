@@ -1,0 +1,5 @@
+apiVersion: v2
+name: rancher-extras
+description: The additional cluster resources needed to bootstrap rancher access
+type: application
+version: 1.0.0

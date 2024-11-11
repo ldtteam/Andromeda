@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rancher-ingress
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/ssl-verify: "false"
+spec:
+  rules:
+    - host: rancher.cluster.ldtteam.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: rancher-management-backplane
+                port:
+                  number: 443
+  tls:
+    - hosts:
+        - rancher.cluster.ldtteam.com
+      secretName: rancher-tls
