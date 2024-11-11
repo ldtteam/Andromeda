@@ -2,7 +2,8 @@
 apiVersion: bitnami.com/v1alpha1
 kind: SealedSecret
 metadata:
-  creationTimestamp: null
+  annotations:
+    sealedsecrets.bitnami.com/cluster-wide: "true"
   name: github-oauth
   namespace: argocd
 spec:
@@ -10,6 +11,9 @@ spec:
     client-secret: AgCuRlmxzxmcgY/Mif7t/0kAqlTEYtOETJqODm0DhGaU6qzKEWaAFjNJtcwmDdo/MBua9TouMYDV2HZ9vquvqjdFPj911/MjPX5o+TiHFQfNLL2mOydH7XW5wy/xDy6rkH1vpA7YSlMQv6gUmkLxQ44o357GIeJ8/FfRMhpstyz4JQItLMVqeAZeXYECzXTDl5SL3Jb/UjMjHI5lU06N8EBaGA80OCoEarhpR+070/ewFzhj6kgqXUaY10OpENeYjmAD2rL1S/I24EKMGv2TCcEl+MTp43oCDeerVG244gOH8KP/q/OdQO/SdaxMOZdsQDipDw12i4jb8p0dOMciGYCEuqq+IAqfj0mu7/dB94A5l/EoqqeVKUryJPlz6aUdsz9LMYpbb+zqHYIYgHVQZcFVwWCs5jUxVZ9QGHM5iwPfRwTYlr72LJOmFWPLQeJbmcnhUErPcTp1q2IyLPjPzUOFHP23OVvxr2eDntaNnl53ZtL88eNd27Fnl1BWQrt8SFAuSGWyEujz27x3/z9ItCZT5uFX2ybISSSryMMA0/vOZ1gSfnmG+lm5RwdM8+eFBttUNANHO0lL2D87QOSx2hmAV83JHK65qq5ypPVsfvMapIVQPHkKWyH7Dv0+Whwz5h8XiQJAIGZX+UpSjyZcCqYT+y48ABzQSVU/vFfkRqij22iYWoujzZWbTSMqu+ZBFvXu6TPg2/pKU9Np44GUEmTrvnh+rHxs2W542SMnOgjQKjPef9jDjH5t
   template:
     metadata:
-      creationTimestamp: null
+      annotations:
+        sealedsecrets.bitnami.com/cluster-wide: "true"
       name: github-oauth
       namespace: argocd
+      labels:
+        app.kubernetes.io/part-of: argocd
