@@ -35,7 +35,7 @@ spec:
                     name: GitHub
                     config:
                       clientID: Ov23lipfXF8e0zgVR5i6
-                      clientSecret: $github-oauth:dex.github.clientSecret
+                      clientSecret: $github-oauth:client-secret
                       orgs:
                       - name: ldtteam
                       - name: parchmentmc
