@@ -41,8 +41,8 @@ spec:
                       - name: parchmentmc
             rbac:
               policy.csv: |
-                g, ldtteam:cluster-admins, role:admin
-                g, parchmentmc:toolchain, role:admin
+                g, ldtteam:Cluster Admins, role:admin
+                g, parchmentmc:Toolchain, role:admin
           redis-ha:
             enabled: true
           controller:
