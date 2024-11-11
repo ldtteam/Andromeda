@@ -25,7 +25,7 @@ spec:
             cm:
               url: https://argo.cluster.ldtteam.com
               application.instanceLabelKey: argocd.argoproj.io/instance
-              admin.enabled: true
+              admin.enabled: false
               exec.enabled: true
               dex.config: |
                 connectors:
