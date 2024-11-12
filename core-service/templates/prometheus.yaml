@@ -66,7 +66,7 @@ spec:
                 client_secret: $__file{/etc/secrets/github-auth/client_secret}
                 enabled: true
                 allowed_organizations: ["ldtteam", "ParchmentMC"]
-                role_attribute_path: "contains(groups[*], '@ldtteam/Cluster admins') && 'GrafanaAdmin' || contains(groups[*], '@ParchmentMC/ToolChain') && 'GrafanaAdmin' || 'Viewer'"
+                role_attribute_path: "contains(groups[*], '@ldtteam/cluster-admins') && 'GrafanaAdmin' || contains(groups[*], '@ParchmentMC/toolchain') && 'GrafanaAdmin' || 'Viewer'"
               log:
                 level: debug
             plugins:
