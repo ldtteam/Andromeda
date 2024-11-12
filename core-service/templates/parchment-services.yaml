@@ -4,7 +4,7 @@ metadata:
   name: parchment
   namespace: argocd
 spec:
-  project: default
+  project: parchment
   destination:
     server: "https://kubernetes.default.svc"
     namespace: parchment
