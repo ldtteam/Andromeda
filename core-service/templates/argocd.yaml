@@ -41,19 +41,19 @@ spec:
                       - name: ParchmentMC
             rbac:
               policy.csv: |
-                p, ldtteam:Cluster Admins, projects, get, ldtteam, allow
+                p, ldtteam:Cluster Admins, projects, *, ldtteam, allow
                 p, ldtteam:Cluster Admins, applications, *, ldtteam/*, allow
                 p, ldtteam:Cluster Admins, logs, *, ldtteam/*, allow
                 p, ldtteam:Cluster Admins, exec, *, ldtteam/*, allow
-                p, ldtteam:Cluster Admins, projects, get, default, allow
+                p, ldtteam:Cluster Admins, projects, *, default, allow
                 p, ldtteam:Cluster Admins, applications, *, default/*, allow
                 p, ldtteam:Cluster Admins, logs, *, default/*, allow
                 p, ldtteam:Cluster Admins, exec, *, default/*, allow
-                p, ParchmentMC:Toolchain, projects, get, parchment, allow
+                p, ParchmentMC:Toolchain, projects, *, parchment, allow
                 p, ParchmentMC:Toolchain, applications, *, parchment/*, allow
                 p, ParchmentMC:Toolchain, logs, *, parchment/*, allow
                 p, ParchmentMC:Toolchain, exec, *, parchment/*, allow
-                p, ParchmentMC:Toolchain, projects, get, default, allow
+                p, ParchmentMC:Toolchain, projects, *, default, allow
                 p, ParchmentMC:Toolchain, applications, *, default/*, allow
                 p, ParchmentMC:Toolchain, logs, *, default/*, allow
                 p, ParchmentMC:Toolchain, exec, *, default/*, allow
