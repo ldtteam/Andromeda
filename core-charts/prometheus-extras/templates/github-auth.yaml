@@ -1,0 +1,15 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: github-auth
+  namespace: prometheus
+spec:
+  encryptedData:
+    client_secret: AgASB/bWFPcV1DQAb7R/JmhA4YSZJ8zW+3u/EuQvlt/5acFHKTiZsebsZU/GbCFbFqjIJUMsMPclKDsusDSQCZNp1ueq6TEG2Mxn/5BNzkwk3eu7O2+DOFtK3Zq4kLC0qOuf9He4OAYEWIvzfo9/IIKzgDAuFzQHoJkVeCW62w8bCvfDcB+ow+JonXbehk+eg/Yo/Wq+H/xLVe0x+qHgt9fukZOHis5lZMx6oOMbQVslCfoeG04KXj7zzXP1VrijsvcIqEL8yOS5/nqVilRx7asj0nKKNyRiyxnkk1tbrDJ7abOLcKBm8Vm1BiOas9Id9KGcMA/70O8yAzZu+BD3mahIrn12N5DAHsAkrgaMyYk1QjVXitW+JEiixS+w6e5wj2ki/xD+GeNsmEkmc0BNPAi78MlvbM8gRbYUn6bWpeK5QbCYlCYY1Od3w80i0Qf20++XiUEwlAW2llISZynqSI4HocZy5HGbJHVVaBe5z06b6CZXcEc7XrI2SOs61T/UPoFy8IU+rVC6t/zXxHLJt89SsNQ2hCZcAeybf6rG4eTgl9ouNQf0IS88DO8N8hK5NWtfq7Hs0nbQMwQJ8tp4MDq1L7vMiOWDBFkkQQZYpxl4wgV0vQWfzv53ObAm4dM3EWcR7Jvil0tm2UBKuJt/yvXdGHipkMgJZUQ2LbfBJCNsDTsgpI1H4SMubIeLwLYSSd20tdn7YFXyRk0KdoYqWpYhJLeWcCpPMOHznEcH+oCS7frHjV0BJ5+6
+  template:
+    metadata:
+      name: github-auth
+      namespace: prometheus
+      labels:
+        app.kubernetes.io/part-of: prometheus
