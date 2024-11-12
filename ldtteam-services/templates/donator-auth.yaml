@@ -4,7 +4,7 @@ metadata:
   name: donator-auth
   namespace: argocd
 spec:
-  project: default
+  project: ldtteam
   destination:
     server: "https://kubernetes.default.svc"
     namespace: donator-auth

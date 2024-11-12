@@ -4,7 +4,7 @@ metadata:
   name: ldtteam
   namespace: argocd
 spec:
-  project: default
+  project: ldtteam
   destination:
     server: "https://kubernetes.default.svc"
     namespace: ldtteam
