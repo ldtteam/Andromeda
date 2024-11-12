@@ -67,6 +67,8 @@ spec:
                 enabled: true
                 allowed_organizations: ["ldtteam", "ParchmentMC"]
                 role_attribute_path: "contains(groups[*], '@ldtteam/Cluster Admins') && 'GrafanaAdmin' || contains(groups[*], '@ParchmentMC/ToolChain') && 'GrafanaAdmin' || 'Viewer'"
+              log:
+                level: debug
             plugins:
               - grafana-simple-json-datasource
             ingress:
