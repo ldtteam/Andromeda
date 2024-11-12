@@ -51,6 +51,7 @@ spec:
                 p, ldtteam:Cluster Admins, exec, *, default/*, allow
                 p, ldtteam:Cluster Admins, repositories, *, *, allow
                 p, ldtteam:Cluster Admins, extensions, *, *, allow
+                p, ldtteam:Cluster Admins, clusters, *, *, allow
                 p, ParchmentMC:Toolchain, projects, *, parchment, allow
                 p, ParchmentMC:Toolchain, applications, *, parchment/*, allow
                 p, ParchmentMC:Toolchain, logs, *, parchment/*, allow
@@ -61,6 +62,7 @@ spec:
                 p, ParchmentMC:Toolchain, exec, *, default/*, allow
                 p, ParchmentMC:Toolchain, repositories, *, *, allow
                 p, ParchmentMC:Toolchain, extensions, *, *, allow
+                p, ParchmentMC:Toolchain, clusters, *, *, allow
                 g, ldtteam:Cluster Admins, role:read
                 g, ParchmentMC:Toolchain, role:read
           redis-ha:
