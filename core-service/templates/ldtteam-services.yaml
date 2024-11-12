@@ -14,10 +14,10 @@ spec:
     syncOptions:
       - CreateNamespace=true
   sources:
-    - repoURL: https:://github.com/ldtteam/LSAT
+    - repoURL: "https://github.com/ldtteam/LSAT"
       path: ldtteam-services
       targetRevision: HEAD
       helm:
-        values: |-
+        valuesObject:
           repository:
-            url : https:://github.com/ldtteam/LSAT
+            url : "https://github.com/ldtteam/LSAT"
