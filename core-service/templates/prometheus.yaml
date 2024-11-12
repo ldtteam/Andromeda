@@ -58,12 +58,15 @@ spec:
                 mountPath: /etc/secrets/github-auth
                 readOnly: true
             grafana.ini:
+              server:
+                domain: grafana.cluster.ldtteam.com
+                root_url: https://grafana.cluster.ldtteam.com
               auth.github:
-                  client_id: Ov23liCjjnStcO8EzdfP
-                  client_secret: $__file{/etc/secrets/github-auth/client_secret}
-                  enabled: true
-                  allowed_organizations: ["ldtteam", "ParchmentMC"]
-                  role_attribute_path: "contains(groups[*], '@ldtteam/Cluster Admins') && 'GrafanaAdmin' || contains(groups[*], '@ParchmentMC/ToolChain') && 'GrafanaAdmin' || 'Viewer'"
+                client_id: Ov23liCjjnStcO8EzdfP
+                client_secret: $__file{/etc/secrets/github-auth/client_secret}
+                enabled: true
+                allowed_organizations: ["ldtteam", "ParchmentMC"]
+                role_attribute_path: "contains(groups[*], '@ldtteam/Cluster Admins') && 'GrafanaAdmin' || contains(groups[*], '@ParchmentMC/ToolChain') && 'GrafanaAdmin' || 'Viewer'"
             plugins:
               - grafana-simple-json-datasource
             ingress:
