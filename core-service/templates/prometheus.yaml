@@ -58,8 +58,7 @@ spec:
                 mountPath: /etc/secrets/github-auth
                 readOnly: true
             grafana.ini:
-              auth:
-                github:
+              auth.github:
                   client_id: Ov23liCjjnStcO8EzdfP
                   client_secret: $__file{/etc/secrets/github-auth/client_secret}
                   enabled: true
