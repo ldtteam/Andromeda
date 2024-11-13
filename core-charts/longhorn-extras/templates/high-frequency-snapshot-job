@@ -1,0 +1,14 @@
+apiVersion: longhorn.io/v1beta1
+kind: RecurringJob
+metadata:
+  name: high-frequency-snapshot
+  namespace: longhorn-system
+spec:
+  cron: "0 0/6 */1 * *"
+  task: "snapshot"
+  groups:
+  - high-frequency
+  retain: 10
+  concurrency: 2
+  labels:
+    group: high-frequency

@@ -1,0 +1,14 @@
+apiVersion: longhorn.io/v1beta1
+kind: RecurringJob
+metadata:
+  name: high-frequency-backup
+  namespace: longhorn-system
+spec:
+  cron: "0 0 * * *"
+  task: "backup"
+  groups:
+  - high-frequency
+  retain: 4
+  concurrency: 2
+  labels:
+    group: high-frequency
