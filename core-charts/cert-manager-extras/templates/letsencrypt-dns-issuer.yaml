@@ -1,0 +1,18 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-dns
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: {{ .Values.email }}
+    privateKeySecretRef:
+      name: letsencrypt-dns
+    solvers:
+      - dns01:
+          webhook:
+            groupName: acme.ldtteam.com
+            solverName: hetzner
+            config:
+              secretName: hetzner-secret
+              apiUrl: https://dns.hetzner.com/api/v1

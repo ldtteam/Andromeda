@@ -24,3 +24,10 @@ spec:
     - repoURL: {{ .Values.repository.url }}
       path: core-charts/cert-manager-extras
       targetRevision: HEAD
+    - repoURL: https://vadimkim.github.io/cert-manager-webhook-hetzner
+      chart: cert-manager-webhook-hetzner
+      targetRevision: 1.*
+      helm:
+        releaseName: cert-manager-webhook-hetzner
+        valuesObject:
+          groupName: acme.ldtteam.com
