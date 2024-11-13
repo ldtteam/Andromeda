@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-dns
+  namespace: argocd
+spec:
+  project: default
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: external-dns
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+  sources:
+    - repoURL: registry-1.docker.io/bitnamicharts
+      chart: external-dns
+      targetRevision: 8.*
+      helm:
+        releaseName: external-dns-parchment
+        valuesObject:
+          provider: cloudflare
+          cloudflare:
+            secretName: parchmentmc-cloudflare-api-token-secret
+            proxied: true
+          domainFilters:
+            - parchmentmc.net
+            - parchmentmc.org
+    - repoURL: {{ .Values.repository.url }}
+      path: core-charts/external-dns-extras
+      targetRevision: HEAD
+

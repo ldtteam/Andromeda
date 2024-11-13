@@ -1,0 +1,3 @@
+email: acme@neoforged.net
+ingress:
+  class: nginx
