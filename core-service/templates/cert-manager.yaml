@@ -16,11 +16,15 @@ spec:
   sources:
     - repoURL: https://charts.jetstack.io
       chart: cert-manager
-      targetRevision: v1.11.0
+      targetRevision: v1.16.1
       helm:
         parameters:
           - name: installCRDs
             value: "true"
+        valuesObject:
+          enableCertificateOwnerRef: true
+          dns01RecursiveNameservers: 8.8.8.8:53,1.1.1.1:53
+          dns01RecursiveNameserversOnly: true
     - repoURL: {{ .Values.repository.url }}
       path: core-charts/cert-manager-extras
       targetRevision: HEAD
