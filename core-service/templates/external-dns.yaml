@@ -27,7 +27,7 @@ spec:
           domainFilters:
             - parchmentmc.net
             - parchmentmc.org
-          #annotationFilter: "external-dns.alpha.kubernetes.io/target"
+          annotationFilter: "external-dns.alpha.kubernetes.io/target"
     - repoURL: {{ .Values.repository.url }}
       path: core-charts/external-dns-extras
       targetRevision: HEAD
