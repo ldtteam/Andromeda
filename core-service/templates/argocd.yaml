@@ -42,6 +42,7 @@ spec:
                       - name: ChiselsAndBits
             rbac:
               policy.csv: |
+                p, ldtteam:Cluster Admins, projects, create, *, allow
                 p, ldtteam:Cluster Admins, projects, *, ldtteam, allow
                 p, ldtteam:Cluster Admins, applications, *, ldtteam/*, allow
                 p, ldtteam:Cluster Admins, logs, *, ldtteam/*, allow
