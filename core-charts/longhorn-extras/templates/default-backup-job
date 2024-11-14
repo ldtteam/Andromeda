@@ -11,4 +11,4 @@ spec:
   retain: 4
   concurrency: 2
   labels:
-    group: default
+    group: default2
