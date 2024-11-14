@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: chiselsandbits
+  namespace: argocd
+spec:
+  project: chiselsandbits
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: chiselsandbits
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+  sources:
+    - repoURL: https://github.com/ChiselsAndBits/Printer
+      path: chiselsandbits-services
+      targetRevision: HEAD
+      helm:
+        values: |-
+          repository:
+            url : https://github.com/ChiselsAndBits/Printer
