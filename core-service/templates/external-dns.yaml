@@ -14,7 +14,7 @@ spec:
     syncOptions:
       - CreateNamespace=true
   sources:
-    - repoURL: registry-1.docker.io/bitnamicharts
+    - repoURL: https://charts.bitnami.com/bitnami
       chart: external-dns
       targetRevision: 8.*
       helm:
@@ -27,6 +27,48 @@ spec:
           domainFilters:
             - parchmentmc.net
             - parchmentmc.org
+          annotationFilter: "external-dns.alpha.kubernetes.io/target"
+    - repoURL: https://charts.bitnami.com/bitnami
+      chart: external-dns
+      targetRevision: 8.*
+      helm:
+        releaseName: external-dns-hetzner
+        valuesObject:
+          provider: webhook
+          extraArgs:
+            webhook-provider-url: http://localhost:8888
+            txt-prefix: "reg-%{record_type}-"
+          sidecars:
+            - name: hetzner-webhook
+              image: ghcr.io/mconfalonieri/external-dns-hetzner-webhook:v0.6.0
+              ports:
+                - containerPort: 8888
+                  name: webhook
+                - containerPort: 8080
+                  name: http
+              livenessProbe:
+                httpGet:
+                  path: /health
+                  port: http
+                initialDelaySeconds: 10
+                timeoutSeconds: 5
+              readinessProbe:
+                httpGet:
+                  path: /ready
+                  port: http
+                initialDelaySeconds: 10
+                timeoutSeconds: 5
+              env:
+                - name: HETZNER_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: hetzner-credentials
+                      key: api-key
+          domainFilters:
+            - ldtteam.com
+            - minecolonies.com
+            - hermans-code.com
+            - chisels-and-bits.com
           annotationFilter: "external-dns.alpha.kubernetes.io/target"
     - repoURL: {{ .Values.repository.url }}
       path: core-charts/external-dns-extras
