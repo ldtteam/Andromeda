@@ -39,6 +39,7 @@ spec:
                       orgs:
                       - name: ldtteam
                       - name: ParchmentMC
+                      - name: ChiselsAndBits
             rbac:
               policy.csv: |
                 p, ldtteam:Cluster Admins, projects, *, ldtteam, allow
@@ -52,6 +53,17 @@ spec:
                 p, ldtteam:Cluster Admins, repositories, *, *, allow
                 p, ldtteam:Cluster Admins, extensions, *, *, allow
                 p, ldtteam:Cluster Admins, clusters, *, *, allow
+                p, ChiselsAndBits:Cluster Admin, projects, *, chiselsandbits, allow
+                p, ChiselsAndBits:Cluster Admin, applications, *, chiselsandbits/*, allow
+                p, ChiselsAndBits:Cluster Admin, logs, *, chiselsandbits/*, allow
+                p, ChiselsAndBits:Cluster Admin, exec, *, chiselsandbits/*, allow
+                p, ChiselsAndBits:Cluster Admin, projects, *, default, allow
+                p, ChiselsAndBits:Cluster Admin, applications, *, default/*, allow
+                p, ChiselsAndBits:Cluster Admin, logs, *, default/*, allow
+                p, ChiselsAndBits:Cluster Admin, exec, *, default/*, allow
+                p, ChiselsAndBits:Cluster Admin, repositories, *, *, allow
+                p, ChiselsAndBits:Cluster Admin, extensions, *, *, allow
+                p, ChiselsAndBits:Cluster Admin, clusters, *, *, allow
                 p, ParchmentMC:Toolchain, projects, *, parchment, allow
                 p, ParchmentMC:Toolchain, applications, *, parchment/*, allow
                 p, ParchmentMC:Toolchain, logs, *, parchment/*, allow
@@ -65,6 +77,7 @@ spec:
                 p, ParchmentMC:Toolchain, clusters, *, *, allow
                 g, ldtteam:Cluster Admins, role:read
                 g, ParchmentMC:Toolchain, role:read
+                g, ChiselsAndBits:Cluster Admin, role:read
           redis-ha:
             enabled: true
           controller:
