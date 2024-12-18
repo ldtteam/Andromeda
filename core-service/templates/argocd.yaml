@@ -42,6 +42,18 @@ spec:
                       - name: ChiselsAndBits
             rbac:
               policy.csv: |
+                p, marc.hermans@ldtteam.com, projects, create, *, allow
+                p, marc.hermans@ldtteam.com, projects, *, hermans, allow
+                p, marc.hermans@ldtteam.com, applications, *, hermans/*, allow
+                p, marc.hermans@ldtteam.com, logs, *, hermans/*, allow
+                p, marc.hermans@ldtteam.com, exec, *, hermans/*, allow
+                p, marc.hermans@ldtteam.com, projects, *, default, allow
+                p, marc.hermans@ldtteam.com, applications, *, default/*, allow
+                p, marc.hermans@ldtteam.com, logs, *, default/*, allow
+                p, marc.hermans@ldtteam.com, exec, *, default/*, allow
+                p, marc.hermans@ldtteam.com, repositories, *, *, allow
+                p, marc.hermans@ldtteam.com, extensions, *, *, allow
+                p, marc.hermans@ldtteam.com, clusters, *, *, allow
                 p, ldtteam:Cluster Admins, projects, create, *, allow
                 p, ldtteam:Cluster Admins, projects, *, ldtteam, allow
                 p, ldtteam:Cluster Admins, applications, *, ldtteam/*, allow
@@ -79,6 +91,7 @@ spec:
                 g, ldtteam:Cluster Admins, role:read
                 g, ParchmentMC:Toolchain, role:read
                 g, ChiselsAndBits:Cluster Admin, role:read
+                u, marc.hermans@ldtteam.com, role:read
           redis-ha:
             enabled: true
           controller:
