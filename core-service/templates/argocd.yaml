@@ -91,7 +91,6 @@ spec:
                 g, ldtteam:Cluster Admins, role:read
                 g, ParchmentMC:Toolchain, role:read
                 g, ChiselsAndBits:Cluster Admin, role:read
-                g, marc.hermans@ldtteam.com, role:read
           redis-ha:
             enabled: true
           controller:
