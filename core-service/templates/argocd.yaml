@@ -41,12 +41,13 @@ spec:
                       - name: ParchmentMC
                       - name: ChiselsAndBits
             rbac:
+              scopes: '[groups, email]'
               policy.csv: |
                 p, marc.hermans@ldtteam.com, projects, create, *, allow
-                p, marc.hermans@ldtteam.com, projects, *, hermans, allow
-                p, marc.hermans@ldtteam.com, applications, *, hermans/*, allow
-                p, marc.hermans@ldtteam.com, logs, *, hermans/*, allow
-                p, marc.hermans@ldtteam.com, exec, *, hermans/*, allow
+                p, marc.hermans@ldtteam.com, projects, *, hermans-code, allow
+                p, marc.hermans@ldtteam.com, applications, *, hermans-code/*, allow
+                p, marc.hermans@ldtteam.com, logs, *, hermans-code/*, allow
+                p, marc.hermans@ldtteam.com, exec, *, hermans-code/*, allow
                 p, marc.hermans@ldtteam.com, projects, *, default, allow
                 p, marc.hermans@ldtteam.com, applications, *, default/*, allow
                 p, marc.hermans@ldtteam.com, logs, *, default/*, allow
