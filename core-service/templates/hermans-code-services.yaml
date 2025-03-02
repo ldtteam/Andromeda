@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hermans-code
+  namespace: argocd
+spec:
+  project: hermans-code
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: hermans-code
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+  sources:
+    - repoURL: https://github.com/marchermans/Servitio
+      path: hermans-code-services
+      targetRevision: HEAD
+      helm:
+        values: |-
+          repository:
+            url : https://github.com/marchermans/Servitio
