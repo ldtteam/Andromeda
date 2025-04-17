@@ -18,10 +18,16 @@ spec:
       targetRevision: 4.7.0
       chart: ingress-nginx
       helm:
-        values: |-
+        valuesObject:
           controller:
             nodeSelector:
               ldtteam.com/ingress: "true"
             service:
               annotations:
                 metallb.universe.tf/loadBalancerIPs: 192.168.254.1
+            metrics:
+              enabled: true
+              serviceMonitor:
+                  enabled: true
+                  additionalLabels:
+                    release: prometheus

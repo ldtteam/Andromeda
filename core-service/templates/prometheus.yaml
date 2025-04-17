@@ -32,6 +32,12 @@ spec:
                         storage: 10Gi
           prometheus:
             prometheusSpec:
+              podMonitorSelectorNilUsesHelmValues: false
+              podMonitorSelector: { }
+              podMonitorNamespaceSelector: { }
+              serviceMonitorSelectorNilUseHelmValues: false
+              serviceMonitorSelector: { }
+              serviceMonitorNamespaceSelector: { }
               storage:
                 volumeClaimTemplate:
                   spec:
