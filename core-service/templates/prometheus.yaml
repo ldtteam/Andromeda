@@ -35,7 +35,7 @@ spec:
               podMonitorSelectorNilUsesHelmValues: false
               podMonitorSelector: { }
               podMonitorNamespaceSelector: { }
-              serviceMonitorSelectorNilUseHelmValues: false
+              serviceMonitorSelectorNilUsesHelmValues: false
               serviceMonitorSelector: { }
               serviceMonitorNamespaceSelector: { }
               storage:
