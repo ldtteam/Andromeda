@@ -5,7 +5,10 @@ metadata:
   namespace: {{ .Release.Namespace }}
 subsets:
   - addresses:
-      - ip: 192.168.1.120
+      - ip: 10.1.0.3
+      - ip: 10.2.0.3
+      - ip: 10.3.0.3
+      - ip: 10.4.0.4
     ports:
       - port: 443
         protocol: TCP
