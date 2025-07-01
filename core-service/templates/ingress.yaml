@@ -28,6 +28,7 @@ spec:
               enabled: true
               minReplicas: 3
               maxReplicas: 4
+            minAvailable: 2
             updateStrategy:
               rollingUpdate:
                 maxUnavailable: 1
