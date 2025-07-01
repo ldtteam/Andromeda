@@ -20,6 +20,24 @@ spec:
       helm:
         valuesObject:
           controller:
+            autoscaling:
+              enabled: false
+              minReplicas: 3
+              maxReplicas: 4
+            updateStrategy:
+              rollingUpdate:
+                maxUnavailable: 1
+              type: RollingUpdate
+            affinity:
+              podAntiAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                  - labelSelector:
+                      matchLabels:
+                        app.kubernetes.io/name: ingress-nginx
+                        app.kubernetes.io/component: controller
+                        # This should be the same as the release name
+                        app.kubernetes.io/instance: ingress
+                    topologyKey: "topology.kubernetes.io/zone"
             nodeSelector:
               ldtteam.com/ingress: "true"
             service:
