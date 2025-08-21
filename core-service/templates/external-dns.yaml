@@ -42,17 +42,10 @@ spec:
         valuesObject:
           provider:
             name: webhook
-          extraArgs:
-            webhook-provider-url: http://localhost:8888
-            txt-prefix: "reg-%{record_type}-"
-          extraContainers:
-            - name: hetzner-webhook
-              image: ghcr.io/mconfalonieri/external-dns-hetzner-webhook:v0.6.0
-              ports:
-                - containerPort: 8888
-                  name: webhook
-                - containerPort: 8080
-                  name: http
+            webhook:
+              image:
+                repository: ghcr.io/mconfalonieri/external-dns-hetzner-webhook
+                tag: v0.7.0
               livenessProbe:
                 httpGet:
                   path: /health
