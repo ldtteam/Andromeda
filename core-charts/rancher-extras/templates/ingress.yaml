@@ -9,6 +9,7 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     nginx.ingress.kubernetes.io/ssl-verify: "false"
+    external-dns.alpha.kubernetes.io/target: "cluster.ldtteam.com"
 spec:
   rules:
     - host: rancher.cluster.ldtteam.com

@@ -44,8 +44,8 @@ spec:
             name: webhook
             webhook:
               image:
-                repository: ghcr.io/mconfalonieri/external-dns-hetzner-webhook
-                tag: v0.7.0
+                repository: "ghcr.io/mconfalonieri/external-dns-hetzner-webhook"
+                tag: "v0.7.0"
               livenessProbe:
                 httpGet:
                   path: /health
