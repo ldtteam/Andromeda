@@ -24,9 +24,9 @@ spec:
           cloudflare:
             secretName: parchmentmc-cloudflare-api-token-secret
             proxied: true
-          domainFilters:
-            - parchmentmc.net
-            - parchmentmc.org
+          regexDomainFilters:
+            - (.*\.)*parchmentmc.net
+            - (.*\.)*parchmentmc.org
           annotationFilter: "external-dns.alpha.kubernetes.io/target"
     - repoURL: https://charts.bitnami.com/bitnami
       chart: external-dns
@@ -64,11 +64,11 @@ spec:
                     secretKeyRef:
                       name: hetzner-credentials
                       key: api-key
-          domainFilters:
-            - ldtteam.com
-            - minecolonies.com
-            - hermans-code.com
-            - chisels-and-bits.com
+          regexDomainFilters:
+            - (.*\.)*ldtteam.com
+            - (.*\.)*minecolonies.com
+            - (.*\.)*hermans-code.com
+            - (.*\.)*chisels-and-bits.com
           annotationFilter: "external-dns.alpha.kubernetes.io/target"
     - repoURL: {{ .Values.repository.url }}
       path: core-charts/external-dns-extras
