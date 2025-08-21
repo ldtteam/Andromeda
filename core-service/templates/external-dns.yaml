@@ -18,6 +18,7 @@ spec:
       chart: external-dns
       targetRevision: 1.*
       helm:
+        skipCrds: true
         releaseName: external-dns-parchment
         valuesObject:
           extraArgs:
