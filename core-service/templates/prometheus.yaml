@@ -85,6 +85,7 @@ spec:
               annotations:
                 cert-manager.io/cluster-issuer: letsencrypt-production
                 nginx.ingress.kubernetes.io/ssl-redirect: "true"
+                external-dns.alpha.kubernetes.io/target: "cluster.ldtteam.com"
               tls:
                 - secretName: grafana-ingress-tls
                   hosts:
