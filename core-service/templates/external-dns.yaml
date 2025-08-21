@@ -16,7 +16,7 @@ spec:
   sources:
     - repoURL: https://charts.bitnami.com/bitnami
       chart: external-dns
-      targetRevision: 8.*
+      targetRevision: 9.*
       helm:
         releaseName: external-dns-parchment
         valuesObject:
