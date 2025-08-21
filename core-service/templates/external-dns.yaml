@@ -14,31 +14,38 @@ spec:
     syncOptions:
       - CreateNamespace=true
   sources:
-    - repoURL: https://charts.bitnami.com/bitnami
+    - repoURL: https://kubernetes-sigs.github.io/external-dns/
       chart: external-dns
-      targetRevision: 9.*
+      targetRevision: 1.*
       helm:
         releaseName: external-dns-parchment
         valuesObject:
-          provider: cloudflare
-          cloudflare:
-            secretName: parchmentmc-cloudflare-api-token-secret
-            proxied: true
-          regexDomainFilters:
-            - (.*\.)*parchmentmc.net
-            - (.*\.)*parchmentmc.org
+          extraArgs:
+            cloudflare-proxied: null
+          provider:
+            name: cloudflare
+          env:
+            - name: CF_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: parchmentmc-cloudflare-api-token-secret
+                  key: cloudflare_api_token
+          domainFilters:
+            - parchmentmc.net
+            - parchmentmc.org
           annotationFilter: "external-dns.alpha.kubernetes.io/target"
-    - repoURL: https://charts.bitnami.com/bitnami
+    - repoURL: https://kubernetes-sigs.github.io/external-dns/
       chart: external-dns
-      targetRevision: 9.*
+      targetRevision: 1.*
       helm:
         releaseName: external-dns-hetzner
         valuesObject:
-          provider: webhook
+          provider:
+            name: webhook
           extraArgs:
             webhook-provider-url: http://localhost:8888
             txt-prefix: "reg-%{record_type}-"
-          sidecars:
+          extraContainers:
             - name: hetzner-webhook
               image: ghcr.io/mconfalonieri/external-dns-hetzner-webhook:v0.6.0
               ports:
@@ -64,11 +71,11 @@ spec:
                     secretKeyRef:
                       name: hetzner-credentials
                       key: api-key
-          regexDomainFilters:
-            - (.*\.)*ldtteam.com
-            - (.*\.)*minecolonies.com
-            - (.*\.)*hermans-code.com
-            - (.*\.)*chisels-and-bits.com
+          domainFilters:
+            - ldtteam.com
+            - minecolonies.com
+            - hermans-code.com
+            - chisels-and-bits.com
           annotationFilter: "external-dns.alpha.kubernetes.io/target"
     - repoURL: {{ .Values.repository.url }}
       path: core-charts/external-dns-extras
