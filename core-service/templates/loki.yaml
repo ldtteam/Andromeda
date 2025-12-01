@@ -20,6 +20,8 @@ spec:
       targetRevision: 6.46.0
       helm:
         valuesObject:
+          global:
+            dnsService: "rke2-coredns-rke2-coredns"
           loki:
             commonConfig:
               replication_factor: 1
