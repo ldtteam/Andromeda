@@ -12,7 +12,7 @@ spec:
       serviceAccountName: backup-masterkey-manager
       containers:
       - name: backup-masterkey
-        image: bitnami/kubectl:1.21
+        image: bitnami/kubectl:latest
         command: ["/bin/sh", "-c"]
         workingDir: /scripts
         securityContext:
