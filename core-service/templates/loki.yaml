@@ -39,6 +39,9 @@ spec:
               volume_enabled: true
             ruler:
               enable_api: true
+            storage:
+              bucketNames:
+                chunks: log-chunks
 
           minio:
             enabled: true
