@@ -9,5 +9,7 @@ subsets:
     ports:
       - port: 8080
         protocol: TCP
+        name: HTTP
       - port: 8443
         protocol: TCP
+        name: HTTPS
