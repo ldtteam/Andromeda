@@ -57,6 +57,9 @@ spec:
                       requests:
                         storage: 10Gi
           grafana:
+            persistence:
+              enabled: true
+              size: 3Gi
             extraSecretMounts:
               - name: auth-github-secret-mount
                 secretName: github-auth
