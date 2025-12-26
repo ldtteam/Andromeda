@@ -48,6 +48,9 @@ spec:
 
           minio:
             enabled: true
+            persistence:
+              size: 100Gi
+              annotations: { }
 
           deploymentMode: SingleBinary
 
