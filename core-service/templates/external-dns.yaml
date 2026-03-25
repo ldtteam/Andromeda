@@ -46,7 +46,7 @@ spec:
             webhook:
               image:
                 repository: "ghcr.io/mconfalonieri/external-dns-hetzner-webhook"
-                tag: "v0.7.0"
+                tag: "v0.12.0"
               livenessProbe:
                 httpGet:
                   path: /health
@@ -60,6 +60,8 @@ spec:
                 initialDelaySeconds: 10
                 timeoutSeconds: 5
               env:
+                - name: USE_CLOUD_API
+                  value: "true"
                 - name: HETZNER_API_KEY
                   valueFrom:
                     secretKeyRef:
