@@ -32,7 +32,7 @@ spec:
       
     - repoURL: https://charts.hetzner.cloud
       chart: cert-manager-webhook-hetzner
-      targetRevision: "0."
+      targetRevision: "0.*"
       helm:
         releaseName: cert-manager-webhook-hetzner
         valuesObject:
