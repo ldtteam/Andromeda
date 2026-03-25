@@ -14,5 +14,6 @@ spec:
             groupName: acme.ldtteam.com
             solverName: hetzner
             config:
-              secretName: hetzner-secret
-              apiUrl: https://dns.hetzner.com/api/v1
+              tokenSecretKeyRef:
+                name: hetzner-secret
+                key: api-key

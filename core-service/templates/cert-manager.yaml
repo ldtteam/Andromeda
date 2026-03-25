@@ -25,12 +25,14 @@ spec:
           enableCertificateOwnerRef: true
           dns01RecursiveNameservers: 8.8.8.8:53,1.1.1.1:53
           dns01RecursiveNameserversOnly: true
+          
     - repoURL: {{ .Values.repository.url }}
       path: core-charts/cert-manager-extras
       targetRevision: HEAD
-    - repoURL: https://vadimkim.github.io/cert-manager-webhook-hetzner
+      
+    - repoURL: https://charts.hetzner.cloud
       chart: cert-manager-webhook-hetzner
-      targetRevision: 1.*
+      targetRevision: "0."
       helm:
         releaseName: cert-manager-webhook-hetzner
         valuesObject:
