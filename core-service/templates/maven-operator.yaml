@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: maven-operator
+  namespace: argocd
+spec:
+  project: default
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: maven-operator-system
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  sources:
+    - repoURL: oci://ghcr.io/marchermans/charts
+      chart: maven-operator
+      targetRevision: 0.1.0
+      helm:
+        valuesObject:
+          imagePullSecrets:
+            - name: ghcr-pull-secret
+
+    - repoURL: {{ .Values.repository.url }}
+      path: core-charts/maven-operator-extras
+      targetRevision: HEAD
+
+

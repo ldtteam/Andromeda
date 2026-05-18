@@ -1,0 +1,5 @@
+apiVersion: v2
+name: maven-operator-extras
+description: Additional resources for the maven-operator deployment (pull secrets, etc.)
+type: application
+version: 0.1.0
