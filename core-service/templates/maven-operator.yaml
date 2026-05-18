@@ -15,7 +15,7 @@ spec:
       - CreateNamespace=true
       - ServerSideApply=true
   sources:
-    - repoURL: oci://ghcr.io/marchermans/charts
+    - repoURL: oci://ghcr.io/marchermans/charts/maven-operator
       chart: maven-operator
       targetRevision: 0.1.0
       helm:
