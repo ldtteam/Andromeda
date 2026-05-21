@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: communi-suggestu
+  namespace: argocd
+spec:
+  project: communi-suggestu
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: communi-suggestu
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+  sources:
+    - repoURL: https://github.com/Communi-Suggestu/Taberna
+      path: communi-suggestu-services
+      targetRevision: HEAD
+      helm:
+        values: |-
+          repository:
+            url : https://github.com/Communi-Suggestu/Taberna
