@@ -49,12 +49,6 @@ spec:
             annotations:
               metallb.universe.tf/loadBalancerIPs: 192.168.254.2
 
-          entryPoints:
-            web:
-              address: ":80"
-            websecure:
-              address: ":443"
-
           providers:
             kubernetesCRD:
               enabled: true
