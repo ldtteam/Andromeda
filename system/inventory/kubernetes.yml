@@ -1,0 +1,73 @@
+---
+# Andromeda RKE2 cluster nodes
+# Node naming convention: {proxmox_prefix}{role_suffix}-kubernetes
+#   3xx → titawin, 4xx → adhil, 5xx → nembus, 6xx → veritate
+#   x00 → control-plane, x5x → worker
+all:
+  children:
+
+    # Andromeda RKE2 cluster — system (control-plane/etcd) nodes, one per Proxmox host
+    k8s_system:
+      vars:
+        ansible_user: administrator
+      hosts:
+        300-kubernetes:
+          ansible_host: 10.1.0.4
+          proxmox_host: titawin
+        400-kubernetes:
+          ansible_host: 10.2.0.4
+          proxmox_host: adhil
+        500-kubernetes:
+          ansible_host: 10.3.0.4
+          proxmox_host: nembus
+        600-kubernetes:
+          ansible_host: 10.4.0.5
+          proxmox_host: veritate
+
+    # Andromeda RKE2 cluster — worker nodes, three per Proxmox host
+    k8s_worker:
+      vars:
+        ansible_user: administrator
+      hosts:
+        350-kubernetes:
+          ansible_host: 10.1.0.5
+          proxmox_host: titawin
+        351-kubernetes:
+          ansible_host: 10.1.0.6
+          proxmox_host: titawin
+        352-kubernetes:
+          ansible_host: 10.1.0.7
+          proxmox_host: titawin
+        450-kubernetes:
+          ansible_host: 10.2.0.5
+          proxmox_host: adhil
+        451-kubernetes:
+          ansible_host: 10.2.0.6
+          proxmox_host: adhil
+        452-kubernetes:
+          ansible_host: 10.2.0.7
+          proxmox_host: adhil
+        550-kubernetes:
+          ansible_host: 10.3.0.5
+          proxmox_host: nembus
+        551-kubernetes:
+          ansible_host: 10.3.0.6
+          proxmox_host: nembus
+        552-kubernetes:
+          ansible_host: 10.3.0.7
+          proxmox_host: nembus
+        650-kubernetes:
+          ansible_host: 10.4.0.6
+          proxmox_host: veritate
+        651-kubernetes:
+          ansible_host: 10.4.0.7
+          proxmox_host: veritate
+        652-kubernetes:
+          ansible_host: 10.4.0.8
+          proxmox_host: veritate
+
+    # Convenience group: all Andromeda k8s nodes
+    kubernetes:
+      children:
+        k8s_system:
+        k8s_worker:

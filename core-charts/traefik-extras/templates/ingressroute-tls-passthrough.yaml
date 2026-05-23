@@ -1,0 +1,24 @@
+# Passes all inbound HTTPS traffic through to nginx-ingress unchanged.
+# Traefik reads the TLS SNI header to match the route but does NOT decrypt —
+# the TLS session is terminated by nginx-ingress as before.
+#
+# This is the transitional config. As services are migrated to Traefik
+# IngressRoutes, add per-service routes above this catch-all and remove
+# the corresponding nginx Ingress objects. Once all services are migrated,
+# delete this file and switch nginx-ingress to a ClusterIP service.
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: nginx-tls-passthrough
+  namespace: traefik
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: HostSNI(`*`)
+      services:
+        - name: ingress-ingress-nginx-controller
+          namespace: ingress-nginx
+          port: 443
+  tls:
+    passthrough: true

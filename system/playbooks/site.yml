@@ -1,0 +1,15 @@
+---
+# Master playbook — import per-role playbooks here as needed
+- name: Ping all hardware nodes
+  hosts: proxmox
+  gather_facts: false
+  tasks:
+    - name: Verify connectivity
+      ansible.builtin.ping:
+
+- name: Ping all kubernetes nodes
+  hosts: kubernetes:rancher
+  gather_facts: false
+  tasks:
+    - name: Verify connectivity
+      ansible.builtin.ping:

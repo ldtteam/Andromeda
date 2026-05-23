@@ -1,0 +1,20 @@
+---
+# Updates all Kubernetes nodes one at a time.
+# Each node is drained before rebooting and uncordoned once it's Ready again.
+#
+# Usage:
+#   ansible-playbook playbooks/update-kubernetes-nodes.yml
+#
+# To target specific nodes:
+#   ansible-playbook playbooks/update-kubernetes-nodes.yml --limit k8s_worker
+#
+# To force a reboot even without a pending reboot-required:
+#   ansible-playbook playbooks/update-kubernetes-nodes.yml -e k8s_node_update_force_reboot=true
+
+- name: Update Kubernetes nodes safely
+  hosts: kubernetes
+  serial: 1
+  become: true
+  gather_facts: false
+  roles:
+    - k8s-node-update

@@ -1,0 +1,83 @@
+---
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+# Fire the package upgrade and the node drain at the same time to save time.
+# The node must be drained before rebooting, but both operations are independent
+# of each other so they can safely run in parallel.
+
+- name: Start package upgrade (async)
+  ansible.builtin.apt:
+    upgrade: dist
+  async: "{{ k8s_node_update_reboot_timeout }}"
+  poll: 0
+  register: apt_upgrade_job
+
+- name: Start node drain in parallel with upgrade (async)
+  ansible.builtin.command: >-
+    kubectl drain {{ inventory_hostname }}
+    --ignore-daemonsets
+    {% if k8s_node_update_delete_emptydir_data %}--delete-emptydir-data{% endif %}
+    --timeout={{ k8s_node_update_drain_timeout }}s
+  delegate_to: localhost
+  become: false
+  async: "{{ k8s_node_update_drain_timeout }}"
+  poll: 0
+  register: drain_job
+
+- name: Wait for package upgrade to complete
+  ansible.builtin.async_status:
+    jid: "{{ apt_upgrade_job.ansible_job_id }}"
+  register: apt_result
+  until: apt_result.finished
+  retries: "{{ (k8s_node_update_reboot_timeout / 10) | int }}"
+  delay: 10
+
+- name: Wait for node drain to complete
+  ansible.builtin.async_status:
+    jid: "{{ drain_job.ansible_job_id }}"
+  delegate_to: localhost
+  become: false
+  register: drain_result
+  until: drain_result.finished
+  retries: "{{ (k8s_node_update_drain_timeout / 10) | int }}"
+  delay: 10
+
+- name: Check if reboot is required
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+  register: reboot_required_file
+
+- name: Set reboot fact
+  ansible.builtin.set_fact:
+    node_needs_reboot: "{{ reboot_required_file.stat.exists or k8s_node_update_force_reboot }}"
+
+- name: Reboot node
+  ansible.builtin.reboot:
+    reboot_timeout: "{{ k8s_node_update_reboot_timeout }}"
+    msg: "Rebooting after package upgrade (triggered by Ansible)"
+  when: node_needs_reboot
+
+- name: Wait for node to become Ready in Kubernetes
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - wait
+      - "node/{{ inventory_hostname }}"
+      - --for=condition=Ready
+      - "--timeout={{ k8s_node_update_ready_timeout }}s"
+  delegate_to: localhost
+  become: false
+  when: node_needs_reboot
+
+# Always uncordon — the node was always drained at the start of the run
+- name: Uncordon node
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - uncordon
+      - "{{ inventory_hostname }}"
+  delegate_to: localhost
+  become: false

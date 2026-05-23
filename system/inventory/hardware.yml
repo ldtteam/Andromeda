@@ -1,0 +1,28 @@
+---
+# Proxmox hardware nodes
+all:
+  children:
+    proxmox:
+      vars:
+        ansible_user: root
+      hosts:
+        titawin:
+          ansible_host: 10.1.0.2
+          proxmox_vm_id_range: "2000-2999"
+          proxmox_rancher_vm_id: 1000
+          proxmox_template_vm_id_range: "8000-8999"
+        adhil:
+          ansible_host: 10.2.0.2
+          proxmox_vm_id_range: "3000-3999"
+          proxmox_rancher_vm_id: 1001
+          proxmox_template_vm_id_range: "9000-9999"
+        nembus:
+          ansible_host: 10.3.0.2
+          proxmox_vm_id_range: "4000-4999"
+          proxmox_rancher_vm_id: 1002
+          proxmox_template_vm_id_range: "10000-10999"
+        veritate:
+          ansible_host: 10.4.0.2
+          proxmox_vm_id_range: "5000-5999"
+          proxmox_rancher_vm_id: 1003
+          proxmox_template_vm_id_range: "11000-11999"

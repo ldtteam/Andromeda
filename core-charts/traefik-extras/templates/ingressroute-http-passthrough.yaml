@@ -1,0 +1,21 @@
+# Passes all inbound HTTP traffic through to nginx-ingress.
+# In practice nginx-ingress will redirect most requests to HTTPS,
+# but the redirect response must come from nginx to preserve its
+# existing redirect rules during the migration.
+#
+# Remove this file once the TLS passthrough route above is gone
+# and Traefik owns all HTTPS termination.
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: nginx-http-passthrough
+  namespace: traefik
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: HostSNI(`*`)
+      services:
+        - name: ingress-ingress-nginx-controller
+          namespace: ingress-nginx
+          port: 80

@@ -1,0 +1,15 @@
+---
+# Force a reboot even if no reboot-required file is present
+k8s_node_update_force_reboot: false
+
+# Evict pods with local storage (emptyDir) during drain
+k8s_node_update_delete_emptydir_data: true
+
+# How long (seconds) to wait for pods to be evicted during drain
+k8s_node_update_drain_timeout: 300
+
+# How long (seconds) to wait for the node to become Ready again after reboot
+k8s_node_update_ready_timeout: 600
+
+# How long (seconds) to wait for SSH to come back after reboot
+k8s_node_update_reboot_timeout: 600

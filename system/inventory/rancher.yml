@@ -1,0 +1,25 @@
+---
+# Rancher control cluster — one VM per Proxmox node
+# IPs end in .3 within each Proxmox node's subnet
+all:
+  children:
+    rancher:
+      vars:
+        ansible_user: administrator
+      hosts:
+        rancher-titawin:
+          ansible_host: 10.1.0.3
+          proxmox_host: titawin
+          proxmox_vm_id: 1000
+        rancher-adhil:
+          ansible_host: 10.2.0.3
+          proxmox_host: adhil
+          proxmox_vm_id: 1001
+        rancher-nembus:
+          ansible_host: 10.3.0.3
+          proxmox_host: nembus
+          proxmox_vm_id: 1002
+        rancher-veritate:
+          ansible_host: 10.4.0.3
+          proxmox_host: veritate
+          proxmox_vm_id: 1003

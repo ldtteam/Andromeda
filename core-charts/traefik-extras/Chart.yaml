@@ -1,0 +1,5 @@
+apiVersion: v2
+name: traefik-extras
+description: Cluster-specific config for Traefik — TLS passthrough to nginx-ingress during migration
+type: application
+version: 0.1.0

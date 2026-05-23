@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gateway-api
+  namespace: argocd
+  annotations:
+    # Install CRDs before any app that depends on them (e.g. traefik)
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  project: default
+  destination:
+    server: "https://kubernetes.default.svc"
+    # CRDs are cluster-scoped; namespace is required by ArgoCD but not meaningful here
+    namespace: gateway-api
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+      # CRDs must be applied with replace to allow field updates across versions
+      - Replace=true
+  sources:
+    - repoURL: https://github.com/kubernetes-sigs/gateway-api
+      # NOTE: check https://github.com/kubernetes-sigs/gateway-api/releases for the latest stable
+      targetRevision: v1.5.1
+      # Experimental channel is a superset of standard — includes TCPRoute, TLSRoute etc.
+      # which Traefik can use when migrating services off nginx-ingress.
+      path: config/crd/experimental
