@@ -3,4 +3,4 @@ repository:
   url: https://github.com/ldtteam/Andromeda
 
 loki:
-  enabled: false
+  enabled: true
