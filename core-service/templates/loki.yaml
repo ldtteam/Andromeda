@@ -151,7 +151,8 @@ spec:
           config:
             rustfs:
               region: us-east-1
-              volumes: http://loki-rustfs-{0...3}.loki-rustfs-headless.loki.svc.cluster.local:9000/data/rustfs{0...3}
+              # Use namespace-local DNS names to avoid hardcoding cluster DNS suffix.
+              volumes: http://loki-rustfs-{0...3}.loki-rustfs-headless:9000/data/rustfs{0...3}
           ingress:
             enabled: false
           gatewayApi:
