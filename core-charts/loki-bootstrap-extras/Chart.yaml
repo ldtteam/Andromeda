@@ -1,0 +1,6 @@
+apiVersion: v2
+name: loki-bootstrap-extras
+description: Wave -1 resources for Loki — S3 bucket bootstrap job (runs after RustFS is ready, before Loki starts)
+type: application
+version: 1.0.0
+

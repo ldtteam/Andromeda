@@ -18,3 +18,4 @@ spec:
       namespace: loki
       labels:
         app.kubernetes.io/part-of: loki
+

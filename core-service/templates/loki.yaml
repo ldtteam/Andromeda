@@ -24,10 +24,8 @@ spec:
   sources:
     # Sealed Secret — credentials that both RustFS and Loki consume.
     - repoURL: {{ .Values.repository.url }}
-      path: core-charts/loki-extras
+      path: core-charts/loki-storage-extras
       targetRevision: HEAD
-      directory:
-        include: "loki-object-storage.yaml"
 
     # RustFS — 16-drive distributed erasure set (EC:8).
     # 16 pods × 1 drive × 200 GiB = 3.2 TiB raw → ~1.6 TiB usable.
@@ -118,10 +116,8 @@ spec:
       - CreateNamespace=true
   sources:
     - repoURL: {{ .Values.repository.url }}
-      path: core-charts/loki-extras
+      path: core-charts/loki-bootstrap-extras
       targetRevision: HEAD
-      directory:
-        include: "loki-bucket-bootstrap-job.yaml"
 ---
 # ══════════════════════════════════════════════════════════════════════════════
 # Wave 0 — Loki microservices (Distributed mode)
@@ -494,11 +490,8 @@ spec:
           minio:
             enabled: false
 
-    # Cluster-specific overlays: remaining dashboard configmaps etc.
-    # (object-storage secret and bootstrap job are in their own apps above)
+    # Cluster-specific overlays: dashboards etc.
     - repoURL: {{ .Values.repository.url }}
       path: core-charts/loki-extras
       targetRevision: HEAD
-      directory:
-        exclude: "{loki-object-storage.yaml,loki-bucket-bootstrap-job.yaml}"
 {{- end }}
