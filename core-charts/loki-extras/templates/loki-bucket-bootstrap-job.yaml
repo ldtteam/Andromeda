@@ -7,8 +7,16 @@ metadata:
   labels:
     app.kubernetes.io/name: loki-bucket-bootstrap
     app.kubernetes.io/part-of: loki
+  annotations:
+    # Run this job in sync wave -1 so buckets exist before any Loki component
+    # (especially the compactor) attempts to access S3.
+    argocd.argoproj.io/sync-wave: "-1"
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 spec:
-  backoffLimit: 10
+  # Retry generously — RustFS may take several minutes to form quorum on first deploy.
+  backoffLimit: 20
+  activeDeadlineSeconds: 1800
   ttlSecondsAfterFinished: 600
   template:
     metadata:
@@ -31,32 +39,41 @@ spec:
               export AWS_ACCESS_KEY_ID="${LOKI_S3_ACCESS_KEY_ID}"
               export AWS_SECRET_ACCESS_KEY="${LOKI_S3_SECRET_ACCESS_KEY}"
               export AWS_REGION="${LOKI_S3_REGION}"
+              # RustFS ClusterIP service — always path-style, no TLS inside cluster.
+              S3_ENDPOINT="http://loki-rustfs-svc:9000"
 
-              echo "Waiting for RustFS S3 endpoint: ${LOKI_S3_ENDPOINT}"
-              for i in $(seq 1 60); do
-                if aws --endpoint-url "${LOKI_S3_ENDPOINT}" s3api list-buckets >/dev/null 2>&1; then
+              echo "Waiting for RustFS to become ready at ${S3_ENDPOINT} ..."
+              for i in $(seq 1 120); do
+                if aws --endpoint-url "${S3_ENDPOINT}" \
+                       --no-verify-ssl \
+                       s3api list-buckets >/dev/null 2>&1; then
+                  echo "RustFS is ready."
                   break
                 fi
-                echo "Endpoint not ready yet (${i}/60), retrying..."
-                sleep 5
+                echo "  Attempt ${i}/120 — not ready yet, retrying in 10 s..."
+                sleep 10
               done
 
               ensure_bucket() {
-                bucket="$1"
-                if aws --endpoint-url "${LOKI_S3_ENDPOINT}" s3api head-bucket --bucket "${bucket}" >/dev/null 2>&1; then
-                  echo "Bucket ${bucket} already exists"
+                local bucket="$1"
+                if aws --endpoint-url "${S3_ENDPOINT}" \
+                       --no-verify-ssl \
+                       s3api head-bucket --bucket "${bucket}" >/dev/null 2>&1; then
+                  echo "Bucket '${bucket}' already exists — skipping."
                   return 0
                 fi
-
-                echo "Creating bucket ${bucket}"
-                aws --endpoint-url "${LOKI_S3_ENDPOINT}" s3api create-bucket --bucket "${bucket}" >/dev/null
+                echo "Creating bucket '${bucket}' ..."
+                aws --endpoint-url "${S3_ENDPOINT}" \
+                    --no-verify-ssl \
+                    s3api create-bucket --bucket "${bucket}"
+                echo "Bucket '${bucket}' created."
               }
 
               ensure_bucket "loki-chunks"
               ensure_bucket "loki-ruler"
               ensure_bucket "loki-admin"
 
-              echo "Loki buckets are ready"
+              echo "All Loki buckets are ready."
           resources:
             requests:
               cpu: 50m
@@ -64,5 +81,3 @@ spec:
             limits:
               cpu: 250m
               memory: 256Mi
-
-
