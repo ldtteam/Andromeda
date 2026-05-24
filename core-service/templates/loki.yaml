@@ -153,8 +153,8 @@ spec:
           config:
             rustfs:
               region: us-east-1
-              # Use explicit peer endpoints; brace expansion is not interpreted by all runtimes.
-              volumes: http://loki-rustfs-0.loki-rustfs-headless:9000/data/rustfs0,http://loki-rustfs-1.loki-rustfs-headless:9000/data/rustfs1,http://loki-rustfs-2.loki-rustfs-headless:9000/data/rustfs2,http://loki-rustfs-3.loki-rustfs-headless:9000/data/rustfs3
+              # Use namespace-local DNS names to avoid hardcoding cluster DNS suffix.
+              volumes: http://loki-rustfs-{0...3}.loki-rustfs-headless:9000/data/rustfs{0...3}
           livenessProbe:
             enabled: true
             initialDelaySeconds: 120
