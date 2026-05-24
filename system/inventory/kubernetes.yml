@@ -14,17 +14,22 @@ all:
         300-kubernetes:
           ansible_host: 10.1.0.4
           proxmox_host: titawin
+          proxmox_vmid: 2000
         400-kubernetes:
           ansible_host: 10.2.0.4
           proxmox_host: adhil
+          proxmox_vmid: 3000
         500-kubernetes:
           ansible_host: 10.3.0.4
           proxmox_host: nembus
+          proxmox_vmid: 4000
         600-kubernetes:
           ansible_host: 10.4.0.5
           proxmox_host: veritate
+          proxmox_vmid: 5000
 
     # Andromeda RKE2 cluster — worker nodes, three per Proxmox host
+    # proxmox_vmid values are verified from the QEMU guest agent (IP match) — do not infer from hostname.
     k8s_worker:
       vars:
         ansible_user: administrator
@@ -32,39 +37,51 @@ all:
         350-kubernetes:
           ansible_host: 10.1.0.5
           proxmox_host: titawin
+          proxmox_vmid: 2100
         351-kubernetes:
           ansible_host: 10.1.0.6
           proxmox_host: titawin
+          proxmox_vmid: 2101
         352-kubernetes:
           ansible_host: 10.1.0.7
           proxmox_host: titawin
+          proxmox_vmid: 2102
         450-kubernetes:
           ansible_host: 10.2.0.5
           proxmox_host: adhil
+          proxmox_vmid: 3100
         451-kubernetes:
           ansible_host: 10.2.0.6
           proxmox_host: adhil
+          proxmox_vmid: 3101
         452-kubernetes:
           ansible_host: 10.2.0.7
           proxmox_host: adhil
+          proxmox_vmid: 3102
         550-kubernetes:
           ansible_host: 10.3.0.5
           proxmox_host: nembus
+          proxmox_vmid: 4100
         551-kubernetes:
           ansible_host: 10.3.0.6
           proxmox_host: nembus
+          proxmox_vmid: 4101
         552-kubernetes:
           ansible_host: 10.3.0.7
           proxmox_host: nembus
+          proxmox_vmid: 4102
         650-kubernetes:
           ansible_host: 10.4.0.6
           proxmox_host: veritate
+          proxmox_vmid: 5100
         651-kubernetes:
           ansible_host: 10.4.0.7
           proxmox_host: veritate
+          proxmox_vmid: 5101
         652-kubernetes:
           ansible_host: 10.4.0.8
           proxmox_host: veritate
+          proxmox_vmid: 5102
 
     # Convenience group: all Andromeda k8s nodes
     kubernetes:

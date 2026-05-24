@@ -1,0 +1,247 @@
+---
+- name: Validate required input variables
+  ansible.builtin.assert:
+    that:
+      - k8s_worker_disk_expand_size is match('^\+?[0-9]+[KMGTP]$')
+      - k8s_worker_disk_expand_disk_device | length > 0
+      - proxmox_host is defined
+      - proxmox_vmid is defined
+      - (proxmox_vmid | string) is match('^[0-9]+$')
+    fail_msg: >-
+      Invalid role inputs. Expected host vars proxmox_host + proxmox_vmid,
+      disk device, and expansion size like 20G or +20G.
+
+- name: Validate allowed disk device mode
+  ansible.builtin.assert:
+    that:
+      - k8s_worker_disk_expand_disk_device == 'auto' or k8s_worker_disk_expand_disk_device is match('^(scsi|virtio|sata|ide)[0-9]+$')
+    fail_msg: >-
+      k8s_worker_disk_expand_disk_device must be 'auto' or a Proxmox disk key
+      like scsi0/virtio0/sata0/ide0.
+
+- name: Normalize expansion size for qm command
+  ansible.builtin.set_fact:
+    k8s_worker_disk_expand_size_delta: >-
+      {{ k8s_worker_disk_expand_size if k8s_worker_disk_expand_size.startswith('+') else '+' ~ k8s_worker_disk_expand_size }}
+
+- name: Ensure growpart is installed on Debian-based workers
+  ansible.builtin.apt:
+    name: cloud-guest-utils
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  when: ansible_facts.os_family == 'Debian'
+
+- name: Drain node before disruptive disk operations
+  ansible.builtin.command: >-
+    kubectl drain {{ inventory_hostname }}
+    --ignore-daemonsets
+    --force
+    {% if k8s_worker_disk_expand_delete_emptydir_data %}--delete-emptydir-data{% endif %}
+    --timeout={{ k8s_worker_disk_expand_drain_timeout }}s
+    --disable-eviction
+    --delete-emptydir-data
+  delegate_to: localhost
+  become: false
+
+- name: Expand VM disk on Proxmox host
+  when: k8s_worker_disk_expand_disk_device != 'auto'
+  ansible.builtin.command:
+    argv:
+      - qm
+      - disk
+      - resize
+      - "{{ proxmox_vmid | string }}"
+      - "{{ k8s_worker_disk_expand_disk_device }}"
+      - "{{ k8s_worker_disk_expand_size_delta }}"
+  register: qm_disk_resize_result
+  failed_when: >-
+    qm_disk_resize_result.rc != 0 or
+    'TASK ERROR' in (qm_disk_resize_result.stdout | default('')) or
+    'TASK ERROR' in (qm_disk_resize_result.stderr | default(''))
+  delegate_to: "{{ proxmox_host }}"
+
+- name: Discover Proxmox root disk key when disk device is auto
+  when: k8s_worker_disk_expand_disk_device == 'auto'
+  ansible.builtin.shell: >-
+    qm config {{ proxmox_vmid | string }}
+    | awk -F': ' '
+      /^bootdisk:/ {bootdisk=$2}
+      /^boot:/ {boot=$2}
+      END {
+        if (bootdisk != "") {
+          print bootdisk
+          exit
+        }
+        if (boot ~ /order=/) {
+          sub(/^.*order=/, "", boot)
+          split(boot, order, ";")
+          print order[1]
+        }
+      }'
+  register: qm_config_result
+  changed_when: false
+  delegate_to: "{{ proxmox_host }}"
+
+- name: Extract boot disk key from Proxmox config
+  when: k8s_worker_disk_expand_disk_device == 'auto'
+  ansible.builtin.set_fact:
+    k8s_worker_disk_expand_resolved_device: "{{ qm_config_result.stdout | trim }}"
+
+- name: Ensure auto-resolved Proxmox disk key exists
+  when: k8s_worker_disk_expand_disk_device == 'auto'
+  ansible.builtin.assert:
+    that:
+      - k8s_worker_disk_expand_resolved_device | length > 0
+      - k8s_worker_disk_expand_resolved_device is match('^(scsi|virtio|sata|ide)[0-9]+$')
+    fail_msg: >-
+      Could not auto-detect a valid VM disk key from 'qm config {{ proxmox_vmid }}' on {{ proxmox_host }}
+      (checked bootdisk and boot order first slot).
+      Set k8s_worker_disk_expand_disk_device explicitly (for example virtio0).
+
+- name: Expand auto-detected VM disk on Proxmox host
+  when: k8s_worker_disk_expand_disk_device == 'auto'
+  ansible.builtin.command:
+    argv:
+      - qm
+      - disk
+      - resize
+      - "{{ proxmox_vmid | string }}"
+      - "{{ k8s_worker_disk_expand_resolved_device }}"
+      - "{{ k8s_worker_disk_expand_size_delta }}"
+  register: qm_disk_resize_result
+  failed_when: >-
+    qm_disk_resize_result.rc != 0 or
+    'TASK ERROR' in (qm_disk_resize_result.stdout | default('')) or
+    'TASK ERROR' in (qm_disk_resize_result.stderr | default(''))
+  delegate_to: "{{ proxmox_host }}"
+
+- name: Capture root mount source
+  ansible.builtin.command: findmnt -n -o SOURCE /
+  register: root_source_cmd
+  changed_when: false
+
+- name: Capture root filesystem type
+  ansible.builtin.command: findmnt -n -o FSTYPE /
+  register: root_fstype_cmd
+  changed_when: false
+
+- name: Set root mount facts
+  ansible.builtin.set_fact:
+    k8s_worker_disk_expand_root_source: "{{ root_source_cmd.stdout | trim }}"
+    k8s_worker_disk_expand_root_fstype: "{{ root_fstype_cmd.stdout | trim }}"
+
+- name: Expand non-LVM root partition and filesystem
+  when: k8s_worker_disk_expand_root_source is match('^/dev/[^ ]+[0-9]+$')
+  block:
+    - name: Derive root partition disk and number from device path
+      ansible.builtin.set_fact:
+        root_part_disk: "{{ k8s_worker_disk_expand_root_source | regex_replace('p?[0-9]+$', '') }}"
+        root_part_num: "{{ k8s_worker_disk_expand_root_source | regex_search('([0-9]+)$') }}"
+
+    - name: Grow root partition
+      ansible.builtin.command:
+        argv:
+          - growpart
+          - "{{ root_part_disk }}"
+          - "{{ root_part_num }}"
+      register: growpart_non_lvm_cmd
+      changed_when: "'CHANGED' in (growpart_non_lvm_cmd.stdout | default(''))"
+      failed_when: >-
+        growpart_non_lvm_cmd.rc != 0 and
+        ('NOCHANGE' not in (growpart_non_lvm_cmd.stdout | default('')))
+
+    - name: Grow ext filesystem after partition resize
+      ansible.builtin.command:
+        argv:
+          - resize2fs
+          - "{{ k8s_worker_disk_expand_root_source }}"
+      when: k8s_worker_disk_expand_root_fstype in ['ext2', 'ext3', 'ext4']
+
+    - name: Grow XFS filesystem after partition resize
+      ansible.builtin.command:
+        argv:
+          - xfs_growfs
+          - /
+      when: k8s_worker_disk_expand_root_fstype == 'xfs'
+
+- name: Expand LVM-backed root filesystem
+  when: k8s_worker_disk_expand_root_source is match('^/dev/mapper/.+')
+  block:
+    - name: Resolve root VG name
+      ansible.builtin.command:
+        argv:
+          - lvs
+          - --noheadings
+          - -o
+          - vg_name
+          - "{{ k8s_worker_disk_expand_root_source }}"
+      register: root_vg_cmd
+      changed_when: false
+
+    - name: Resolve root PV path
+      ansible.builtin.shell: >-
+        pvs --noheadings -o pv_name --select vg_name={{ root_vg_cmd.stdout | trim }}
+        | head -n1 | xargs
+      register: root_pv_cmd
+      changed_when: false
+
+    - name: Derive PV partition disk and number from device path
+      ansible.builtin.set_fact:
+        root_pv_disk: "{{ (root_pv_cmd.stdout | trim) | regex_replace('p?[0-9]+$', '') }}"
+        root_pv_partnum: "{{ (root_pv_cmd.stdout | trim) | regex_search('([0-9]+)$') }}"
+
+    - name: Grow PV partition
+      ansible.builtin.command:
+        argv:
+          - growpart
+          - "{{ root_pv_disk }}"
+          - "{{ root_pv_partnum }}"
+      register: growpart_lvm_cmd
+      changed_when: "'CHANGED' in (growpart_lvm_cmd.stdout | default(''))"
+      failed_when: >-
+        growpart_lvm_cmd.rc != 0 and
+        ('NOCHANGE' not in (growpart_lvm_cmd.stdout | default('')))
+
+    - name: Resize physical volume
+      ansible.builtin.command:
+        argv:
+          - pvresize
+          - "{{ root_pv_cmd.stdout | trim }}"
+
+    - name: Extend root logical volume and filesystem
+      ansible.builtin.command:
+        argv:
+          - lvextend
+          - -r
+          - -l
+          - +100%FREE
+          - "{{ k8s_worker_disk_expand_root_source }}"
+
+- name: Reboot node if requested
+  ansible.builtin.reboot:
+    reboot_timeout: "{{ k8s_worker_disk_expand_reboot_timeout }}"
+    msg: "Rebooting after VM disk expansion (triggered by Ansible)"
+  when: k8s_worker_disk_expand_force_reboot
+
+- name: Wait for node to become Ready in Kubernetes
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - wait
+      - "node/{{ inventory_hostname }}"
+      - --for=condition=Ready
+      - "--timeout={{ k8s_worker_disk_expand_ready_timeout }}s"
+  delegate_to: localhost
+  become: false
+  when: k8s_worker_disk_expand_force_reboot
+
+- name: Uncordon node
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - uncordon
+      - "{{ inventory_hostname }}"
+  delegate_to: localhost
+  become: false
+

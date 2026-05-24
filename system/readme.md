@@ -25,6 +25,28 @@ Those four cluster operation nodes can be split into two categories:
 - System, containing the Kubernetes cluster and brainpower
 - Worker, running the applications
 
+### Maintenance automation
+- Node package updates (existing): `scripts/update-kubernetes-nodes.sh`
+- Worker disk expansion (new): `scripts/expand-kubernetes-worker-disks.sh`
 
+#### Expand worker VM disks
+This operation runs one worker node at a time and performs:
+1. `kubectl drain` of the worker node
+2. `qm disk resize` on its mapped Proxmox host
+3. Partition/filesystem growth inside the VM
+4. Optional reboot, then `kubectl uncordon`
 
+Prerequisite:
+- Define `proxmox_vmid` and `proxmox_host` on each worker host in `inventory/kubernetes.yml`.
+  Worker names are not used to infer VM IDs.
 
+Example:
+```bash
+./scripts/expand-kubernetes-worker-disks.sh --size 20G
+```
+
+Common options:
+- `--limit <pattern>` target subset of workers
+- `--skip-nodes <n1,n2>` exclude specific workers
+- `--force-reboot` reboot after expansion
+- `--extra-vars key=value` pass extra Ansible vars

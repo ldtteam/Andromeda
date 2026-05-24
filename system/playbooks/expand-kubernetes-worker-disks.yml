@@ -1,0 +1,19 @@
+---
+# Expands Kubernetes worker VM disks one node at a time.
+# The node is drained first, the VM disk is expanded on Proxmox,
+# then the guest partition/filesystem is expanded before uncordoning.
+#
+# Usage:
+#   ansible-playbook playbooks/expand-kubernetes-worker-disks.yml
+#
+# Override growth amount:
+#   ansible-playbook playbooks/expand-kubernetes-worker-disks.yml -e k8s_worker_disk_expand_size=20G
+
+- name: Expand Kubernetes worker node disks safely
+  hosts: k8s_worker
+  serial: 1
+  become: true
+  gather_facts: true
+  roles:
+    - k8s-worker-disk-expand
+

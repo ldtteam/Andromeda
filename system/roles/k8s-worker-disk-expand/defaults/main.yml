@@ -1,0 +1,23 @@
+---
+# Disk growth amount. Supports values like 10G, 50G, 10240M.
+k8s_worker_disk_expand_size: "10G"
+
+# Proxmox disk slot to resize for worker VMs.
+# Use "auto" to detect the VM bootdisk key from `qm config`.
+k8s_worker_disk_expand_disk_device: "auto"
+
+# Evict pods with local storage (emptyDir) during drain.
+k8s_worker_disk_expand_delete_emptydir_data: true
+
+# Drain timeout in seconds.
+k8s_worker_disk_expand_drain_timeout: 600
+
+# Optional reboot after expansion.
+k8s_worker_disk_expand_force_reboot: false
+
+# Reboot timeout in seconds when reboot is requested.
+k8s_worker_disk_expand_reboot_timeout: 600
+
+# Wait timeout in seconds for node Ready condition.
+k8s_worker_disk_expand_ready_timeout: 600
+

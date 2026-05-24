@@ -19,6 +19,7 @@
   ansible.builtin.command: >-
     kubectl drain {{ inventory_hostname }}
     --ignore-daemonsets
+    --force
     {% if k8s_node_update_delete_emptydir_data %}--delete-emptydir-data{% endif %}
     --timeout={{ k8s_node_update_drain_timeout }}s
   delegate_to: localhost

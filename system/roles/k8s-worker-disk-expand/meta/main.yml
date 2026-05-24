@@ -1,0 +1,6 @@
+---
+galaxy_info:
+  role_name: k8s_worker_disk_expand
+  description: Safely expands Kubernetes worker VM disks on Proxmox and grows guest filesystems with node drain/uncordon orchestration.
+  min_ansible_version: "2.14"
+
