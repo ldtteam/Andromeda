@@ -160,7 +160,7 @@ spec:
           gatewayApi:
             enabled: false
           storageclass:
-            name: longhorn
+            name: rustfs-storage
             dataStorageSize: 50Gi
             logStorageSize: 50Gi
           pdb:
