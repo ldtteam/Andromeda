@@ -153,6 +153,7 @@ spec:
           config:
             rustfs:
               region: us-east-1
+              log_level: warn
               # Use namespace-local DNS names to avoid hardcoding cluster DNS suffix.
               volumes: http://loki-rustfs-{0...3}.loki-rustfs-headless:9000/data/rustfs{0...3}
           livenessProbe:
