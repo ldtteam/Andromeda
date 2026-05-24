@@ -1,0 +1,68 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: loki-bucket-bootstrap
+  namespace: loki
+  labels:
+    app.kubernetes.io/name: loki-bucket-bootstrap
+    app.kubernetes.io/part-of: loki
+spec:
+  backoffLimit: 10
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: loki-bucket-bootstrap
+        app.kubernetes.io/part-of: loki
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: bootstrap
+          image: public.ecr.aws/aws-cli/aws-cli:2.17.52
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - secretRef:
+                name: loki-object-storage
+          command:
+            - /bin/sh
+            - -ec
+            - |
+              export AWS_ACCESS_KEY_ID="${LOKI_S3_ACCESS_KEY_ID}"
+              export AWS_SECRET_ACCESS_KEY="${LOKI_S3_SECRET_ACCESS_KEY}"
+              export AWS_REGION="${LOKI_S3_REGION}"
+
+              echo "Waiting for RustFS S3 endpoint: ${LOKI_S3_ENDPOINT}"
+              for i in $(seq 1 60); do
+                if aws --endpoint-url "${LOKI_S3_ENDPOINT}" s3api list-buckets >/dev/null 2>&1; then
+                  break
+                fi
+                echo "Endpoint not ready yet (${i}/60), retrying..."
+                sleep 5
+              done
+
+              ensure_bucket() {
+                bucket="$1"
+                if aws --endpoint-url "${LOKI_S3_ENDPOINT}" s3api head-bucket --bucket "${bucket}" >/dev/null 2>&1; then
+                  echo "Bucket ${bucket} already exists"
+                  return 0
+                fi
+
+                echo "Creating bucket ${bucket}"
+                aws --endpoint-url "${LOKI_S3_ENDPOINT}" s3api create-bucket --bucket "${bucket}" >/dev/null
+              }
+
+              ensure_bucket "loki-chunks"
+              ensure_bucket "loki-ruler"
+              ensure_bucket "loki-admin"
+
+              echo "Loki buckets are ready"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+
+
