@@ -55,13 +55,38 @@ spec:
               # Required so IngressRouteTCP in the traefik namespace can
               # target the nginx service in the ingress-nginx namespace.
               allowCrossNamespace: true
+            kubernetesGateway:
+              # Enable Gateway API support while keeping legacy Traefik CRDs.
+              enabled: true
+              # Required for TCPRoute/TLSRoute support (experimental channel CRDs).
+              experimentalChannel: true
             kubernetesIngress:
               enabled: false
+
+          gateway:
+            listeners:
+              web:
+                port: 8000
+                protocol: HTTP
+                namespacePolicy:
+                  from: All
+              websecure:
+                port: 8443
+                protocol: TLS
+                namespacePolicy:
+                  from: All
+                mode: Passthrough
 
           # Disable the dashboard — it will be added as a secured IngressRoute later.
           api:
             dashboard: false
             insecure: false
+
+          experimental:
+            plugins:
+              coraza:
+                moduleName: github.com/jcchavezs/coraza-http-wasm-traefik
+                version: v0.3.0
 
           metrics:
             prometheus:

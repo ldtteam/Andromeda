@@ -1,0 +1,148 @@
+# Enforce a WAF middleware contract for HTTPRoutes that attach to the shared Traefik Gateway.
+#
+# App repos can override the default profile per route by setting annotation:
+#   ldtteam-waf-profile: waf-<profile-name>
+# and using the same middleware name in each HTTPRoute rule filter.
+apiVersion: mutations.gatekeeper.sh/v1
+kind: AssignMetadata
+metadata:
+  name: httproute-default-waf-profile
+spec:
+  match:
+    scope: Namespaced
+    kinds:
+      - apiGroups: ["gateway.networking.k8s.io"]
+        kinds: ["HTTPRoute"]
+  location: "metadata.annotations.ldtteam-waf-profile"
+  parameters:
+    assign:
+      value: "waf-crs"
+---
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8sgatewayhttproutewaf
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sGatewayHTTPRouteWAF
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            gatewayNames:
+              type: array
+              items:
+                type: string
+            gatewayNamespaces:
+              type: array
+              items:
+                type: string
+            annotationKey:
+              type: string
+            defaultProfile:
+              type: string
+            profilePrefix:
+              type: string
+            allowedProfiles:
+              type: array
+              items:
+                type: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sgatewayhttproutewaf
+
+        violation[{"msg": msg}] {
+          is_target_route
+          profile := desired_profile
+          not profile_allowed(profile)
+          msg := sprintf("invalid WAF profile %q on HTTPRoute %s/%s", [profile, input.review.object.metadata.namespace, input.review.object.metadata.name])
+        }
+
+        violation[{"msg": msg}] {
+          is_target_route
+          profile := desired_profile
+          some i
+          rule := input.review.object.spec.rules[i]
+          not rule_has_profile(rule, profile)
+          msg := sprintf("HTTPRoute %s/%s rule %v must include ExtensionRef middleware %q", [input.review.object.metadata.namespace, input.review.object.metadata.name, i, profile])
+        }
+
+        is_target_route {
+          input.review.kind.kind == "HTTPRoute"
+          some i
+          parent := input.review.object.spec.parentRefs[i]
+          parent_is_target(parent)
+        }
+
+        parent_is_target(parent) {
+          object.get(parent, "name", "") != ""
+          kind := object.get(parent, "kind", "Gateway")
+          kind == "Gateway"
+          group := object.get(parent, "group", "gateway.networking.k8s.io")
+          group == "gateway.networking.k8s.io"
+          gateway_name_allowed(parent)
+          gateway_namespace_allowed(parent)
+        }
+
+        gateway_name_allowed(parent) {
+          names := object.get(input.parameters, "gatewayNames", ["traefik-gateway"])
+          names[_] == parent.name
+        }
+
+        gateway_namespace_allowed(parent) {
+          namespaces := object.get(input.parameters, "gatewayNamespaces", ["traefik"])
+          parent_ns := object.get(parent, "namespace", input.review.object.metadata.namespace)
+          namespaces[_] == parent_ns
+        }
+
+        desired_profile := object.get(annotations, annotation_key, default_profile) {
+          annotations := object.get(input.review.object.metadata, "annotations", {})
+          annotation_key := object.get(input.parameters, "annotationKey", "ldtteam-waf-profile")
+          default_profile := object.get(input.parameters, "defaultProfile", "waf-crs")
+        }
+
+        profile_allowed(profile) {
+          allowed := object.get(input.parameters, "allowedProfiles", [])
+          count(allowed) > 0
+          allowed[_] == profile
+        }
+
+        profile_allowed(profile) {
+          allowed := object.get(input.parameters, "allowedProfiles", [])
+          count(allowed) == 0
+          prefix := object.get(input.parameters, "profilePrefix", "waf-")
+          startswith(profile, prefix)
+        }
+
+        rule_has_profile(rule, profile) {
+          filters := object.get(rule, "filters", [])
+          some i
+          filter := filters[i]
+          filter.type == "ExtensionRef"
+          ext := object.get(filter, "extensionRef", {})
+          lower(object.get(ext, "group", "")) == "traefik.io"
+          object.get(ext, "kind", "") == "Middleware"
+          object.get(ext, "name", "") == profile
+        }
+---
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sGatewayHTTPRouteWAF
+metadata:
+  name: enforce-waf-on-traefik-gateway-httproutes
+spec:
+  match:
+    kinds:
+      - apiGroups: ["gateway.networking.k8s.io"]
+        kinds: ["HTTPRoute"]
+  parameters:
+    gatewayNames:
+      - traefik-gateway
+    gatewayNamespaces:
+      - traefik
+    annotationKey: ldtteam-waf-profile
+    defaultProfile: waf-crs
+    profilePrefix: waf-
+
