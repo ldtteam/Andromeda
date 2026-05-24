@@ -117,7 +117,7 @@ spec:
           global:
             dnsService: rke2-coredns-rke2-coredns
 
-          deploymentMode: Microservices
+          deploymentMode: Distributed
 
           loki:
             auth_enabled: false
