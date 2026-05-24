@@ -1,9 +1,15 @@
 {{- if (.Values.loki.enabled | default false) }}
+# ══════════════════════════════════════════════════════════════════════════════
+# Wave -2 — Object store: Sealed Secret + RustFS StatefulSet
+# Must be fully healthy before buckets can be created.
+# ══════════════════════════════════════════════════════════════════════════════
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: loki
+  name: loki-storage
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
 spec:
   project: default
   destination:
@@ -16,10 +22,16 @@ spec:
       - CreateNamespace=true
       - ServerSideApply=true
   sources:
-    # ── 1. RustFS — S3-compatible object store (16-drive distributed erasure set) ──────────
-    # 16 pods × 1 drive each → EC:8 (8 data + 8 parity). Tolerates 8-drive loss for reads,
-    # needs 9 drives for writes. Pod anti-affinity spreads across the 12 worker nodes.
-    # We use RustFS instead of MinIO to avoid the AGPL / SSPL licensing constraints.
+    # Sealed Secret — credentials that both RustFS and Loki consume.
+    - repoURL: {{ .Values.repository.url }}
+      path: core-charts/loki-extras
+      targetRevision: HEAD
+      directory:
+        include: "loki-object-storage.yaml"
+
+    # RustFS — 16-drive distributed erasure set (EC:8).
+    # 16 pods × 1 drive × 200 GiB = 3.2 TiB raw → ~1.6 TiB usable.
+    # Tolerates 8 simultaneous drive failures for reads; needs 9+ for writes.
     - repoURL: https://charts.rustfs.com
       chart: rustfs
       targetRevision: 0.4.0
@@ -68,9 +80,9 @@ spec:
           gatewayApi:
             enabled: false
           storageclass:
-            name: rustfs-storage
-            dataStorageSize: 50Gi   # 16 × 50 Gi = 800 GiB raw
-            logStorageSize: 20Gi
+            name: longhorn
+            dataStorageSize: 200Gi
+            logStorageSize: 10Gi
           pdb:
             create: true
             minAvailable: 9          # EC:8 needs 9/16 drives for writes
@@ -81,34 +93,59 @@ spec:
             limits:
               cpu: "2"
               memory: 4Gi
-
-    # ── 2. Loki — Microservices deployment mode ───────────────────────────────────────────
-    # SimpleScalable is deprecated (scheduled removal before Loki 4.0). Microservices mode
-    # gives independent scaling and resource control for each component plane:
-    #
-    #  WRITE PATH:
-    #   Distributor  — stateless fan-out; 3 replicas for HA, loses no data on failure.
-    #   Ingester     — stateful; holds in-memory chunks. replication_factor=3 means each
-    #                  chunk is held by 3 ingesters before flush, so we can lose 1 and
-    #                  still serve all data. Needs PVC only for WAL (not object store).
-    #   PatternIngester — stateless; 2 replicas enough for HA.
-    #
-    #  READ PATH:
-    #   QueryFrontend  — stateless; queues + shards queries; 2 replicas for HA.
-    #   QueryScheduler — stateless; fair-use scheduling; 2 replicas.
-    #   Querier        — stateless workers; 3 replicas; parallelises S3 fetches.
-    #   IndexGateway   — caches TSDB index from S3; 2 replicas. Losing a pod = cache miss,
-    #                    not data loss — it reloads from S3.
-    #
-    #  BACKEND / SINGLETON:
-    #   Compactor      — MUST be a single replica. It runs mark-for-delete and tombstone
-    #                    compaction; two concurrent compactors would corrupt the index.
-    #   Ruler          — 2 replicas with ring sharding; independent of write/read path.
-    #
-    #  CACHES:
-    #   ChunksCache (memcached) — not replicated (1 pod); it is a pure performance cache.
-    #     Losing it just means a cold read from S3 — no data loss.
-    #   ResultsCache (memcached) — same rationale; 1 replica.
+---
+# ══════════════════════════════════════════════════════════════════════════════
+# Wave -1 — Bucket bootstrap: ensure loki-chunks, loki-ruler, loki-admin exist
+# before the Loki compactor starts (compactor runs before the default bucket
+# creator in Loki's startup sequence and would crash on missing buckets).
+# ══════════════════════════════════════════════════════════════════════════════
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: loki-bucket-bootstrap
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  project: default
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: loki
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+  sources:
+    - repoURL: {{ .Values.repository.url }}
+      path: core-charts/loki-extras
+      targetRevision: HEAD
+      directory:
+        include: "loki-bucket-bootstrap-job.yaml"
+---
+# ══════════════════════════════════════════════════════════════════════════════
+# Wave 0 — Loki microservices (Distributed mode)
+# Only deployed after RustFS is ready and buckets exist.
+# ══════════════════════════════════════════════════════════════════════════════
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: loki
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: loki
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+  sources:
     - repoURL: https://grafana-community.github.io/helm-charts
       chart: loki
       targetRevision: 14.0.0
@@ -180,7 +217,6 @@ spec:
                 s3ForcePathStyle: true
                 insecure: true
 
-            # Structured config additions passed verbatim into loki.yaml
             structuredConfig:
               ingester_client:
                 grpc_client_config:
@@ -222,7 +258,7 @@ spec:
             persistence:
               enabled: true
               storageClass: longhorn
-              size: 20Gi                       # WAL only; chunks flush to S3
+              size: 20Gi
             affinity:
               podAntiAffinity:
                 requiredDuringSchedulingIgnoredDuringExecution:
@@ -237,13 +273,6 @@ spec:
               limits:
                 cpu: "2"
                 memory: 4Gi
-            topologySpreadConstraints:
-              - maxSkew: 1
-                topologyKey: kubernetes.io/hostname
-                whenUnsatisfiable: DoNotSchedule
-                labelSelector:
-                  matchLabels:
-                    app.kubernetes.io/component: ingester
 
           patternIngester:
             enabled: true
@@ -409,7 +438,7 @@ spec:
                 cpu: 500m
                 memory: 1Gi
 
-          # ── SimpleScalable components disabled ────────────────────────────────────────
+          # ── SimpleScalable / monolithic components disabled ───────────────────────────
           singleBinary:
             replicas: 0
           write:
@@ -423,21 +452,17 @@ spec:
           bloomGateway:
             replicas: 0
 
-          # ── Caches (memcached) ────────────────────────────────────────────────────────
-          # ChunksCache: speeds up repeated log reads. 1 replica is fine — it is a cache,
-          # not a store. Losing it = cold S3 reads for a short period, no data loss.
+          # ── Caches ────────────────────────────────────────────────────────────────────
           chunksCache:
             enabled: true
             replicas: 1
             allocatedMemory: 4096
 
-          # ResultsCache: caches query results to avoid re-hitting S3 for same time range.
-          # Same rationale: 1 replica acceptable.
           resultsCache:
             enabled: true
             replicas: 1
 
-          # ── Gateway (nginx) ───────────────────────────────────────────────────────────
+          # ── Gateway ───────────────────────────────────────────────────────────────────
           gateway:
             enabled: true
             replicas: 2
@@ -456,11 +481,11 @@ spec:
             serviceMonitor:
               enabled: true
               metricsInstance:
-                enabled: false     # we use CRD-based ServiceMonitors, not Grafana Agent
+                enabled: false
             rules:
               enabled: true
             dashboards:
-              enabled: true        # creates ConfigMaps in the loki namespace with grafana_dashboard label
+              enabled: true
             selfMonitoring:
               enabled: false
               grafanaAgent:
@@ -469,8 +494,11 @@ spec:
           minio:
             enabled: false
 
-    # ── 3. Cluster-specific overlays (sealed secrets, bucket bootstrap, dashboards) ──────
+    # Cluster-specific overlays: remaining dashboard configmaps etc.
+    # (object-storage secret and bootstrap job are in their own apps above)
     - repoURL: {{ .Values.repository.url }}
       path: core-charts/loki-extras
       targetRevision: HEAD
+      directory:
+        exclude: "{loki-object-storage.yaml,loki-bucket-bootstrap-job.yaml}"
 {{- end }}

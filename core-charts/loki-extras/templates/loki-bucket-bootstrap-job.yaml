@@ -8,9 +8,8 @@ metadata:
     app.kubernetes.io/name: loki-bucket-bootstrap
     app.kubernetes.io/part-of: loki
   annotations:
-    # Run this job in sync wave -1 so buckets exist before any Loki component
-    # (especially the compactor) attempts to access S3.
-    argocd.argoproj.io/sync-wave: "-1"
+    # Ordering is controlled by the parent ArgoCD Application's sync-wave.
+    # BeforeHookCreation ensures a clean re-run on every sync.
     argocd.argoproj.io/hook: Sync
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 spec:
