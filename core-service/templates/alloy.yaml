@@ -17,52 +17,183 @@ spec:
   sources:
     - repoURL: https://grafana.github.io/helm-charts
       chart: k8s-monitoring
-      targetRevision: 3.6.1
+      targetRevision: 4.1.2
       helm:
         valuesObject:
-          global:
-            dnsService: "rke2-coredns-rke2-coredns"
           cluster:
             name: andromeda
 
           destinations:
-            - name: loki
+            loki:
               type: loki
               url: http://loki-gateway.loki.svc.cluster.local/loki/api/v1/push
 
+          # Cluster events (all namespaces)
           clusterEvents:
             enabled: true
-            collector: alloy-logs
 
+          # Node logs via journald
           nodeLogs:
-            enabled: false
-
-          podLogs:
             enabled: true
-            gatherMethod: kubernetesApi
-            collector: alloy-logs
-            labelsToKeep: ["app_kubernetes_io_name","container","instance","job","level","namespace","service_name","service_namespace","deployment_environment","deployment_environment_name"]
+            journal:
+              path: /var/log/journal
+              maxAge: 8h
+              units:
+                - kubelet.service
+                - containerd.service
+                - rke2-server.service
+                - rke2-agent.service
+                - mdmonitor.service
+
+          # Pod logs across the whole cluster (all pods, no annotation required)
+          # NOTE: in k8s-monitoring v4 the old `podLogs` key was split into separate features.
+          # We use podLogsViaKubernetesApi which is the equivalent of the old kubernetesApi gatherMethod.
+          podLogsViaKubernetesApi:
+            enabled: true
+            discoveryMethod: "all"
+            # Only tail logs from the current time on startup; prevents replaying
+            # old pod log history which Loki rejects as "timestamp too old".
+            onlyNewLogs: true
+            # Only map labels that actually exist as pod labels to log labels.
+            # Using empty string as the k8s label name is invalid and produces broken relabeling rules.
+            labels:
+              app_kubernetes_io_name: app.kubernetes.io/name
+            # Pull annotations in as labels so pipeline stage.match selectors can read them.
+            annotations:
+              job: k8s.grafana.com/logs.job
+              min_level: logs.grafana.com/min-level
             structuredMetadata:
-              pod: pod  # Set structured metadata "pod" from label "pod"
+              pod: pod
+            # Drop log lines below the requested minimum level.
+            # Pods opt in by setting the annotation:
+            #   logs.grafana.com/min-level: "warn"   # accepts: debug, info, warn, error, fatal
+            # If the annotation is absent all log lines are kept (stage.match selectors never match).
+            #
+            # IMPORTANT: stage.match selectors match against LABELS on the log stream, not extracted values.
+            # __level is extracted into the extracted map, so stage.drop uses `source = "__level"` correctly,
+            # but the outer stage.match must use `min_level` which IS a label (set from the annotation above).
+            # The stage.drop `expression` matches against the extracted `__level` value.
+            extraLogProcessingStages: |
+              stage.json {
+                expressions = { "__level" = "level" }
+              }
+              stage.regex {
+                expression = "(?i)(?:(?:level|lvl|severity)[=: \"]+|\\[)(?P<__level>trace|debug|info|warn(?:ing)?|error|fatal|critical)(?:\\]|\\b)"
+              }
+              stage.labels {
+                values = { "tmp_log_level" = "__level" }
+              }
+              stage.match {
+                selector = "{min_level=\"fatal\"}"
+                stage.drop {
+                  source              = "tmp_log_level"
+                  expression          = "^(?i)(trace|debug|info|warn(?:ing)?|error|critical)$"
+                  drop_counter_reason = "below_min_level"
+                }
+                stage.drop {
+                  source              = "tmp_log_level"
+                  expression          = "^$"
+                  drop_counter_reason = "below_min_level_no_level"
+                }
+              }
+              stage.match {
+                selector = "{min_level=\"error\"}"
+                stage.drop {
+                  source              = "tmp_log_level"
+                  expression          = "^(?i)(trace|debug|info|warn(?:ing)?|critical)$"
+                  drop_counter_reason = "below_min_level"
+                }
+                stage.drop {
+                  source              = "tmp_log_level"
+                  expression          = "^$"
+                  drop_counter_reason = "below_min_level_no_level"
+                }
+              }
+              stage.match {
+                selector = "{min_level=\"warn\"}"
+                stage.drop {
+                  source              = "tmp_log_level"
+                  expression          = "^(?i)(trace|debug|info|critical)$"
+                  drop_counter_reason = "below_min_level"
+                }
+                stage.drop {
+                  source              = "tmp_log_level"
+                  expression          = "^$"
+                  drop_counter_reason = "below_min_level_no_level"
+                }
+              }
+              stage.match {
+                selector = "{min_level=\"info\"}"
+                stage.drop {
+                  source              = "tmp_log_level"
+                  expression          = "^(?i)(trace|debug|critical)$"
+                  drop_counter_reason = "below_min_level"
+                }
+                stage.drop {
+                  source              = "tmp_log_level"
+                  expression          = "^$"
+                  drop_counter_reason = "below_min_level_no_level"
+                }
+              }
+              stage.match {
+                selector = "{min_level=\"debug\"}"
+                stage.drop {
+                  source              = "tmp_log_level"
+                  expression          = "^(?i)(trace|critical)$"
+                  drop_counter_reason = "below_min_level"
+                }
+              }
+              stage.label_drop {
+                values = ["tmp_log_level"]
+              }
 
           # Collectors
-          alloy-singleton:
-            enabled: false
+          collectors:
+            alloy-logs:
+              presets: [daemonset, filesystem-log-reader, clustered]
+              # Mount host machine-id so loki.source.journal can locate the correct
+              # journal subdirectory (journal files live under /var/log/journal/<machine-id>/).
+              # Without this, libsystemd uses the container's machine-id and finds nothing.
+              # Also mount /run/log/journal for nodes that use volatile (in-memory) journald storage.
+              alloy:
+                mounts:
+                  extra:
+                    - name: machine-id
+                      mountPath: /etc/machine-id
+                      readOnly: true
+                    - name: run-log-journal
+                      mountPath: /run/log/journal
+                      readOnly: true
+              controller:
+                # loki.source.journal uses inotify_create() to watch for journal changes.
+                # inotify instances are counted per uid across the whole node; the default
+                # of 256 is easily exhausted by rke2/containerd/kubelet root processes,
+                # causing sd_journal_get_fd() to fail with EMFILE (-24).
+                # This privileged initContainer raises the limit node-wide before Alloy starts.
+                initContainers:
+                  - name: increase-inotify-instances
+                    image: busybox:1.36
+                    command: ['sysctl', '-w', 'fs.inotify.max_user_instances=8192']
+                    securityContext:
+                      privileged: true
+                volumes:
+                  extra:
+                    - name: machine-id
+                      hostPath:
+                        path: /etc/machine-id
+                        type: File
+                    - name: run-log-journal
+                      hostPath:
+                        path: /run/log/journal
+                        type: DirectoryOrCreate
 
-          alloy-metrics:
-            enabled: false
-
-          alloy-logs:
-            enabled: true
-            alloy:
-              mounts:
-                varlog: false
-                dockercontainers: false
-              clustering:
-                enabled: true
-
-          alloy-profiles:
-            enabled: false
-
-          alloy-receiver:
-            enabled: false
+          # Configure Loki datasource in the prometheus-stack Grafana
+          grafana:
+            # Point at the kube-prometheus-stack grafana service
+            host: prometheus-grafana.prometheus.svc.cluster.local
+            datasources:
+              - name: Loki
+                type: loki
+                access: proxy
+                url: http://loki-gateway.loki.svc.cluster.local
+                isDefault: false

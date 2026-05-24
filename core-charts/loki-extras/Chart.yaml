@@ -1,0 +1,6 @@
+apiVersion: v2
+name: loki-extras
+description: Cluster-specific resources for Loki
+type: application
+version: 1.0.0
+
