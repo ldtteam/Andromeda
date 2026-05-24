@@ -21,6 +21,7 @@ spec:
       helm:
         valuesObject:
           global:
+            dnsService: rke2-coredns-rke2-coredns
             extraEnvFrom:
               - secretRef:
                   name: loki-object-storage
