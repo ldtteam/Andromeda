@@ -50,6 +50,12 @@ spec:
             replicaZoneSoftAntiAffinity: true
             backupTarget: s3://ldtteam-cluster-backup@backblaze/prod/longhorn
             backupTargetCredentialSecret: backblaze-backup-credentials
+
+          metrics:
+            serviceMonitor:
+              enabled: true
+              additionalLabels:
+                release: prometheus
     - repoURL: {{ .Values.repository.url }}
       path: core-charts/longhorn-extras
       targetRevision: HEAD
