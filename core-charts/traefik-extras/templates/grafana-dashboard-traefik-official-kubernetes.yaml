@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: traefik-official-kubernetes-dashboard
+  namespace: prometheus
+  labels:
+    grafana_dashboard: "1"
+  annotations:
+    grafana.com/dashboard-id: "17347"
+    grafana.com/dashboard-revision: "9"
+    app.kubernetes.io/part-of: traefik
+data:
+  traefik-official-kubernetes-dashboard.json: |
+{{ .Files.Get "dashboards/traefik-official-kubernetes-dashboard.json" | nindent 4 }}
+
