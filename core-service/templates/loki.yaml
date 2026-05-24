@@ -89,33 +89,39 @@ spec:
               - -config.expand-env=true
             affinity:
               podAntiAffinity:
-                requiredDuringSchedulingIgnoredDuringExecution:
-                  - labelSelector:
-                      matchLabels:
-                        app.kubernetes.io/component: backend
-                    topologyKey: kubernetes.io/hostname
+                preferredDuringSchedulingIgnoredDuringExecution:
+                  - weight: 100
+                    podAffinityTerm:
+                      labelSelector:
+                        matchLabels:
+                          app.kubernetes.io/component: backend
+                      topologyKey: kubernetes.io/hostname
           read:
             replicas: 3
             extraArgs:
               - -config.expand-env=true
             affinity:
               podAntiAffinity:
-                requiredDuringSchedulingIgnoredDuringExecution:
-                  - labelSelector:
-                      matchLabels:
-                        app.kubernetes.io/component: read
-                    topologyKey: kubernetes.io/hostname
+                preferredDuringSchedulingIgnoredDuringExecution:
+                  - weight: 100
+                    podAffinityTerm:
+                      labelSelector:
+                        matchLabels:
+                          app.kubernetes.io/component: read
+                      topologyKey: kubernetes.io/hostname
           write:
             replicas: 3
             extraArgs:
               - -config.expand-env=true
             affinity:
               podAntiAffinity:
-                requiredDuringSchedulingIgnoredDuringExecution:
-                  - labelSelector:
-                      matchLabels:
-                        app.kubernetes.io/component: write
-                    topologyKey: kubernetes.io/hostname
+                preferredDuringSchedulingIgnoredDuringExecution:
+                  - weight: 100
+                    podAffinityTerm:
+                      labelSelector:
+                        matchLabels:
+                          app.kubernetes.io/component: write
+                      topologyKey: kubernetes.io/hostname
 
           ingester:
             replicas: 0
