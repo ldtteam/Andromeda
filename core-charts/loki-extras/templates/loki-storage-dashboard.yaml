@@ -1,0 +1,211 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loki-storage-dashboard
+  namespace: prometheus
+  labels:
+    grafana_dashboard: "1"
+data:
+  loki-storage.json: |
+    {
+      "title": "Loki Storage",
+      "uid": "loki-storage",
+      "tags": ["loki", "storage"],
+      "schemaVersion": 38,
+      "refresh": "1m",
+      "time": { "from": "now-24h", "to": "now" },
+      "panels": [
+        {
+          "id": 1,
+          "type": "gauge",
+          "title": "Loki PVC Used",
+          "description": "Actual space used by each Loki PVC replica on the Longhorn node.",
+          "gridPos": { "x": 0, "y": 0, "w": 6, "h": 6 },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "min": 0,
+              "thresholds": {
+                "mode": "percentage",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 70 },
+                  { "color": "red", "value": 90 }
+                ]
+              },
+              "color": { "mode": "thresholds" }
+            }
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdMarkers": true },
+          "targets": [
+            {
+              "expr": "longhorn_volume_actual_size_bytes{pvc_namespace=\"loki\"}",
+              "legendFormat": "{{ "{{pvc}}" }}",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "type": "gauge",
+          "title": "Loki PVC Capacity",
+          "gridPos": { "x": 6, "y": 0, "w": 6, "h": 6 },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "min": 0,
+              "color": { "mode": "fixed", "fixedColor": "blue" }
+            }
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+          "targets": [
+            {
+              "expr": "longhorn_volume_capacity_bytes{pvc_namespace=\"loki\"}",
+              "legendFormat": "{{ "{{pvc}}" }}",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "type": "gauge",
+          "title": "Loki PVC Usage %",
+          "gridPos": { "x": 12, "y": 0, "w": 6, "h": 6 },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "min": 0,
+              "max": 100,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 70 },
+                  { "color": "red", "value": 90 }
+                ]
+              },
+              "color": { "mode": "thresholds" }
+            }
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "showThresholdMarkers": true },
+          "targets": [
+            {
+              "expr": "100 * longhorn_volume_actual_size_bytes{pvc_namespace=\"loki\"} / longhorn_volume_capacity_bytes{pvc_namespace=\"loki\"}",
+              "legendFormat": "{{ "{{pvc}}" }}",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "type": "stat",
+          "title": "Loki PVC Free",
+          "gridPos": { "x": 18, "y": 0, "w": 6, "h": 6 },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "yellow", "value": 10737418240 },
+                  { "color": "green", "value": 21474836480 }
+                ]
+              },
+              "color": { "mode": "thresholds" }
+            }
+          },
+          "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+          "targets": [
+            {
+              "expr": "longhorn_volume_capacity_bytes{pvc_namespace=\"loki\"} - longhorn_volume_actual_size_bytes{pvc_namespace=\"loki\"}",
+              "legendFormat": "{{ "{{pvc}}" }}",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "type": "timeseries",
+          "title": "Loki PVC Usage Over Time",
+          "gridPos": { "x": 0, "y": 6, "w": 24, "h": 8 },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "bytes",
+              "custom": { "fillOpacity": 10 }
+            }
+          },
+          "targets": [
+            {
+              "expr": "longhorn_volume_actual_size_bytes{pvc_namespace=\"loki\"}",
+              "legendFormat": "Used — {{ "{{pvc}}" }}",
+              "refId": "A"
+            },
+            {
+              "expr": "longhorn_volume_capacity_bytes{pvc_namespace=\"loki\"}",
+              "legendFormat": "Capacity — {{ "{{pvc}}" }}",
+              "refId": "B"
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "type": "timeseries",
+          "title": "Loki — Ingested Bytes Rate",
+          "description": "Rate of log data ingested by Loki",
+          "gridPos": { "x": 0, "y": 14, "w": 12, "h": 8 },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "Bps",
+              "custom": { "fillOpacity": 10 }
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum(rate(loki_distributor_bytes_received_total[5m]))",
+              "legendFormat": "Ingest rate",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 7,
+          "type": "timeseries",
+          "title": "Loki — Chunks Flushed Rate",
+          "gridPos": { "x": 12, "y": 14, "w": 12, "h": 8 },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "cps",
+              "custom": { "fillOpacity": 10 }
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum(rate(loki_ingester_chunk_stored_total[5m]))",
+              "legendFormat": "Chunks flushed/s",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "id": 8,
+          "type": "timeseries",
+          "title": "Loki Compactor — Deleted Chunks (retention)",
+          "gridPos": { "x": 0, "y": 22, "w": 24, "h": 8 },
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "custom": { "fillOpacity": 10 }
+            }
+          },
+          "targets": [
+            {
+              "expr": "sum(rate(loki_compactor_deleted_chunks_total[5m]))",
+              "legendFormat": "Deleted chunks/s",
+              "refId": "A"
+            }
+          ]
+        }
+      ]
+    }
+
