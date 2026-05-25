@@ -94,3 +94,7 @@ spec:
           chunksCache:
             allocatedMemory: 2000
 
+          gateway:
+            nginxConfig:
+              resolver: rke2-coredns-rke2-coredns.kube-system.svc.cluster.local
+
