@@ -64,6 +64,8 @@ spec:
               enabled: false
 
           gateway:
+            annotations:
+              external-dns.alpha.kubernetes.io/target: "cluster.ldtteam.com"
             listeners:
               web:
                 port: 8000
