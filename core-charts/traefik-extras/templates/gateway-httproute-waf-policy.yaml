@@ -7,6 +7,8 @@ apiVersion: mutations.gatekeeper.sh/v1
 kind: AssignMetadata
 metadata:
   name: httproute-default-waf-profile
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
 spec:
   match:
     scope: Namespaced
@@ -22,6 +24,8 @@ apiVersion: templates.gatekeeper.sh/v1
 kind: ConstraintTemplate
 metadata:
   name: k8sgatewayhttproutewaf
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   crd:
     spec:
@@ -132,6 +136,9 @@ apiVersion: constraints.gatekeeper.sh/v1beta1
 kind: K8sGatewayHTTPRouteWAF
 metadata:
   name: enforce-waf-on-traefik-gateway-httproutes
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   match:
     kinds:
