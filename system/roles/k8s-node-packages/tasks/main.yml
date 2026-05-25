@@ -1,0 +1,11 @@
+---
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Install required tool packages
+  ansible.builtin.apt:
+    name: "{{ k8s_node_packages_list }}"
+    state: present
+

@@ -1,0 +1,6 @@
+---
+# List of Debian packages to ensure are installed on every Kubernetes node
+k8s_node_packages_list:
+  - nfs-common
+  - open-iscsi
+

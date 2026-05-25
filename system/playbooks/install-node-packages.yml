@@ -1,0 +1,11 @@
+---
+# Installs required tool packages (nfs-common, open-iscsi, …) on every Kubernetes node.
+# Add extra packages to k8s_node_packages_list in defaults/main.yml of the role,
+# or override via group_vars / extra-vars.
+- name: Install required tool packages on all Kubernetes nodes
+  hosts: kubernetes
+  become: true
+  gather_facts: false
+  roles:
+    - role: k8s-node-packages
+
