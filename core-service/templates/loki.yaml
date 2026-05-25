@@ -1,15 +1,16 @@
 {{- if (.Values.loki.enabled | default false) }}
 # ══════════════════════════════════════════════════════════════════════════════
-# Wave -2 — Object store: Sealed Secret + RustFS StatefulSet
-# Must be fully healthy before buckets can be created.
+# Single Loki Application — sync-wave ordering is done at the resource level
+# inside core-charts/loki-extras and via commonAnnotations on the RustFS source:
+#   wave -2  →  SealedSecret (loki-object-storage) + all RustFS resources
+#   wave -1  →  bucket bootstrap Job
+#   wave  0  →  all Loki microservices (default, no annotation needed)
 # ══════════════════════════════════════════════════════════════════════════════
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: loki-storage
+  name: loki
   namespace: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: "-2"
 spec:
   project: default
   destination:
@@ -22,20 +23,25 @@ spec:
       - CreateNamespace=true
       - ServerSideApply=true
   sources:
-    # Sealed Secret — credentials that both RustFS and Loki consume.
+    # ── Source 1: cluster-specific overlays ─────────────────────────────────
+    # SealedSecret          → wave -2
+    # bucket bootstrap Job  → wave -1
+    # Grafana dashboards    → wave  0 (default)
     - repoURL: {{ .Values.repository.url }}
-      path: core-charts/loki-storage-extras
+      path: core-charts/loki-extras
       targetRevision: HEAD
-
-    # RustFS — 16-drive distributed erasure set (EC:8).
-    # 16 pods × 1 drive × 200 GiB = 3.2 TiB raw → ~1.6 TiB usable.
-    # Tolerates 8 simultaneous drive failures for reads; needs 9+ for writes.
+      
+    # ── Source 2: RustFS — 16-drive distributed erasure set (EC:8) ──────────
+    # commonAnnotations stamps every rendered resource with sync-wave -2 so
+    # all RustFS pods are Running before the bootstrap Job (wave -1) starts.
     - repoURL: https://charts.rustfs.com
       chart: rustfs
       targetRevision: 0.4.0
       helm:
         releaseName: loki-rustfs
         valuesObject:
+          commonAnnotations:
+            argocd.argoproj.io/sync-wave: "-2"
           replicaCount: 16
           secret:
             existingSecret: loki-object-storage
@@ -48,8 +54,7 @@ spec:
             rustfs:
               region: us-east-1
               log_level: warn
-              # 16-pod brace expansion — parsed natively by RustFS's MinIO-ported endpoint resolver.
-              # Each pod owns a single /data volume; EC:8 is auto-selected for 16 drives.
+              # 16-pod brace expansion — EC:8 is auto-selected for 16 drives.
               volumes: "http://loki-rustfs-{0...15}.loki-rustfs-headless:9000/data"
           affinity:
             podAntiAffinity:
@@ -91,57 +96,8 @@ spec:
             limits:
               cpu: "2"
               memory: 4Gi
----
-# ══════════════════════════════════════════════════════════════════════════════
-# Wave -1 — Bucket bootstrap: ensure loki-chunks, loki-ruler, loki-admin exist
-# before the Loki compactor starts (compactor runs before the default bucket
-# creator in Loki's startup sequence and would crash on missing buckets).
-# ══════════════════════════════════════════════════════════════════════════════
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: loki-bucket-bootstrap
-  namespace: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: "-1"
-spec:
-  project: default
-  destination:
-    server: "https://kubernetes.default.svc"
-    namespace: loki
-  syncPolicy:
-    automated:
-      prune: true
-    syncOptions:
-      - CreateNamespace=true
-  sources:
-    - repoURL: {{ .Values.repository.url }}
-      path: core-charts/loki-bootstrap-extras
-      targetRevision: HEAD
----
-# ══════════════════════════════════════════════════════════════════════════════
-# Wave 0 — Loki microservices (Distributed mode)
-# Only deployed after RustFS is ready and buckets exist.
-# ══════════════════════════════════════════════════════════════════════════════
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: loki
-  namespace: argocd
-  annotations:
-    argocd.argoproj.io/sync-wave: "0"
-spec:
-  project: default
-  destination:
-    server: "https://kubernetes.default.svc"
-    namespace: loki
-  syncPolicy:
-    automated:
-      prune: true
-    syncOptions:
-      - CreateNamespace=true
-      - ServerSideApply=true
-  sources:
+              
+    # ── Source 3: Loki microservices (Distributed mode) ──────────────────────
     - repoURL: https://grafana-community.github.io/helm-charts
       chart: loki
       targetRevision: 14.0.0
@@ -149,16 +105,12 @@ spec:
         valuesObject:
           global:
             dnsService: rke2-coredns-rke2-coredns
-
           deploymentMode: Distributed
-
           loki:
             auth_enabled: false
-
             commonConfig:
               replication_factor: 3
               path_prefix: /var/loki
-
             schemaConfig:
               configs:
                 - from: "2024-04-01"
@@ -168,7 +120,6 @@ spec:
                   index:
                     prefix: loki_index_
                     period: 24h
-
             ingester:
               wal:
                 enabled: true
@@ -176,10 +127,8 @@ spec:
               lifecycler:
                 ring:
                   replication_factor: 3
-
             pattern_ingester:
               enabled: true
-
             limits_config:
               allow_structured_metadata: true
               volume_enabled: true
@@ -188,17 +137,14 @@ spec:
               ingestion_burst_size_mb: 128
               max_streams_per_user: 0          # unlimited (single tenant)
               max_global_streams_per_user: 0
-
             compactor:
               retention_enabled: true
               delete_request_store: s3
               working_directory: /var/loki/compactor
-
             ruler:
               enable_api: true
               storage:
                 type: s3
-
             storage:
               type: s3
               bucketNames:
@@ -212,14 +158,12 @@ spec:
                 secretAccessKey: "${LOKI_S3_SECRET_ACCESS_KEY}"
                 s3ForcePathStyle: true
                 insecure: true
-
             structuredConfig:
               ingester_client:
                 grpc_client_config:
                   max_recv_msg_size: 104857600
                   max_send_msg_size: 104857600
-
-          # ── Write path ────────────────────────────────────────────────────────────────
+          # ── Write path ────────────────────────────────────────────────────
           distributor:
             replicas: 3
             extraArgs:
@@ -243,7 +187,6 @@ spec:
               limits:
                 cpu: "1"
                 memory: 1Gi
-
           ingester:
             replicas: 3
             extraArgs:
@@ -269,7 +212,6 @@ spec:
               limits:
                 cpu: "2"
                 memory: 4Gi
-
           patternIngester:
             enabled: true
             replicas: 2
@@ -294,8 +236,7 @@ spec:
               limits:
                 cpu: "1"
                 memory: 1Gi
-
-          # ── Read path ─────────────────────────────────────────────────────────────────
+          # ── Read path ─────────────────────────────────────────────────────
           queryFrontend:
             replicas: 2
             extraArgs:
@@ -319,7 +260,6 @@ spec:
               limits:
                 cpu: "1"
                 memory: 1Gi
-
           queryScheduler:
             enabled: true
             replicas: 2
@@ -335,7 +275,6 @@ spec:
               limits:
                 cpu: 500m
                 memory: 512Mi
-
           querier:
             replicas: 3
             extraArgs:
@@ -359,7 +298,6 @@ spec:
               limits:
                 cpu: "2"
                 memory: 4Gi
-
           indexGateway:
             enabled: true
             replicas: 2
@@ -388,8 +326,7 @@ spec:
               limits:
                 cpu: "1"
                 memory: 2Gi
-
-          # ── Backend / Singleton ───────────────────────────────────────────────────────
+          # ── Backend / Singleton ──────────────────────────────────────────
           compactor:
             replicas: 1                        # MUST be 1 — concurrent compactors corrupt index
             extraArgs:
@@ -408,7 +345,6 @@ spec:
               limits:
                 cpu: "1"
                 memory: 2Gi
-
           ruler:
             enabled: true
             replicas: 2
@@ -433,8 +369,7 @@ spec:
               limits:
                 cpu: 500m
                 memory: 1Gi
-
-          # ── SimpleScalable / monolithic components disabled ───────────────────────────
+          # ── SimpleScalable / monolithic components disabled ──────────────
           singleBinary:
             replicas: 0
           write:
@@ -447,18 +382,15 @@ spec:
             replicas: 0
           bloomGateway:
             replicas: 0
-
-          # ── Caches ────────────────────────────────────────────────────────────────────
+          # ── Caches ──────────────────────────────────────────────────────
           chunksCache:
             enabled: true
             replicas: 1
             allocatedMemory: 4096
-
           resultsCache:
             enabled: true
             replicas: 1
-
-          # ── Gateway ───────────────────────────────────────────────────────────────────
+          # ── Gateway ─────────────────────────────────────────────────────
           gateway:
             enabled: true
             replicas: 2
@@ -471,8 +403,7 @@ spec:
                         matchLabels:
                           app.kubernetes.io/component: gateway
                       topologyKey: kubernetes.io/hostname
-
-          # ── Monitoring ───────────────────────────────────────────────────────────────
+          # ── Monitoring ──────────────────────────────────────────────────
           monitoring:
             serviceMonitor:
               enabled: true
@@ -486,12 +417,6 @@ spec:
               enabled: false
               grafanaAgent:
                 installOperator: false
-
           minio:
             enabled: false
-
-    # Cluster-specific overlays: dashboards etc.
-    - repoURL: {{ .Values.repository.url }}
-      path: core-charts/loki-extras
-      targetRevision: HEAD
 {{- end }}

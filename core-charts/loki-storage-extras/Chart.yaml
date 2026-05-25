@@ -1,6 +1,0 @@
-apiVersion: v2
-name: loki-storage-extras
-description: Wave -2 resources for Loki — sealed credentials secret (deployed before RustFS and before bucket bootstrap)
-type: application
-version: 1.0.0
-

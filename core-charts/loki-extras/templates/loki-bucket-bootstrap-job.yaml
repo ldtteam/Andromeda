@@ -8,8 +8,7 @@ metadata:
     app.kubernetes.io/name: loki-bucket-bootstrap
     app.kubernetes.io/part-of: loki
   annotations:
-    # Ordering is controlled by the parent ArgoCD Application's sync-wave.
-    # BeforeHookCreation ensures a clean re-run on every sync.
+    argocd.argoproj.io/sync-wave: "-1"
     argocd.argoproj.io/hook: Sync
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 spec:

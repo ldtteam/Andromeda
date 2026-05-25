@@ -4,6 +4,8 @@ kind: SealedSecret
 metadata:
   name: loki-object-storage
   namespace: loki
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
 spec:
   encryptedData:
     LOKI_S3_ACCESS_KEY_ID: AgBiibBwL9DYTjCepv06TI1yiFalbU5ME26zEjVKEr4ri//e3+Xy4tYHX779IOhZ+B1Du8s6UGM82x4TwEfdo1u3/NJwS8g2EmcxjIQUT6CCddAQ9aga2biIk1rj5fTGZuREwEl8NjLr7n+aUvaZQpqklOzm3T/vk6fafARXgvNILzMmdbZb846A5l56SlDGO1EmfLNBJ6GpNlVfanf5qGPyq1myQNxm56jRXUjPq1my0GDx1NZH1f1CdX0cB4LlHi3ZyeL+xvkkVtFHoBFf1w/mqtAEX5PxvgPjgMv1sVTquNrKIfk+iW/8Q4qwtorhRAKM1NNJ+rXTlzvT59uF8rtH+vbY3GdSOMlOgxr66tMvYFmtsFWOuKgXJ/Vn9iPaz3a3FgXmhMHUFfIbK1zWB/LZy2HHTtzYr19knK2cqqqpcwoe2mhOjJkxLZM6lv8yDsGAipR+6oLEO+tWOH053UXzF4xfTLsIxZCauq7Bgw0Miv2aqGkmDwvCxU1gK62du7zigOmubHLF/QrpLRXAPEK3V4c5fzAbM4N50/kc9FFQsUdyScRCj0ZMWgHjAc/c5Y7CY102Ya3+2xobdrCA1xeQxZ5x1EeRn7kULS2xP1hpZB6d80UKwFa+hOSNMi3KTwXsDD8zfjMDJUEOap9euOqx/100YzdLmq6HVCapFPZZm/Ri0+R8WAUI+nnpUG35ZBrSzyo+
