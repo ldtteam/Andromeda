@@ -1,11 +1,3 @@
-{{- if (.Values.loki.enabled | default false) }}
-# ══════════════════════════════════════════════════════════════════════════════
-# Single Loki Application — sync-wave ordering is done at the resource level
-# inside core-charts/loki-extras and via commonAnnotations on the RustFS source:
-#   wave -2  →  SealedSecret (loki-object-storage) + all RustFS resources
-#   wave -1  →  bucket bootstrap Job
-#   wave  0  →  all Loki microservices (default, no annotation needed)
-# ══════════════════════════════════════════════════════════════════════════════
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -23,400 +15,82 @@ spec:
       - CreateNamespace=true
       - ServerSideApply=true
   sources:
-    # ── Source 1: cluster-specific overlays ─────────────────────────────────
-    # SealedSecret          → wave -2
-    # bucket bootstrap Job  → wave -1
-    # Grafana dashboards    → wave  0 (default)
-    - repoURL: {{ .Values.repository.url }}
-      path: core-charts/loki-extras
-      targetRevision: HEAD
-      
-    # ── Source 2: RustFS — 16-drive distributed erasure set (EC:8) ──────────
-    # commonAnnotations stamps every rendered resource with sync-wave -2 so
-    # all RustFS pods are Running before the bootstrap Job (wave -1) starts.
-    - repoURL: https://charts.rustfs.com
-      chart: rustfs
-      targetRevision: 0.4.0
-      helm:
-        releaseName: loki-rustfs
-        valuesObject:
-          commonAnnotations:
-            argocd.argoproj.io/sync-wave: "-2"
-          replicaCount: 16
-          secret:
-            existingSecret: loki-object-storage
-          mode:
-            standalone:
-              enabled: false
-            distributed:
-              enabled: true
-          config:
-            rustfs:
-              region: us-east-1
-              log_level: warn
-              # 16-pod brace expansion — EC:8 is auto-selected for 16 drives.
-              volumes: "http://loki-rustfs-{0...15}.loki-rustfs-headless:9000/data"
-          affinity:
-            podAntiAffinity:
-              enabled: true
-              topologyKey: kubernetes.io/hostname
-          livenessProbe:
-            enabled: true
-            initialDelaySeconds: 120
-            periodSeconds: 15
-            timeoutSeconds: 10
-            failureThreshold: 8
-          startupProbe:
-            enabled: true
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 10
-            failureThreshold: 36   # up to 6 min for all 16 pods to form quorum
-          readinessProbe:
-            enabled: true
-            initialDelaySeconds: 90
-            periodSeconds: 10
-            timeoutSeconds: 10
-            failureThreshold: 12
-          ingress:
-            enabled: false
-          gatewayApi:
-            enabled: false
-          storageclass:
-            name: longhorn
-            dataStorageSize: 200Gi
-            logStorageSize: 10Gi
-          pdb:
-            create: true
-            minAvailable: 9          # EC:8 needs 9/16 drives for writes
-          resources:
-            requests:
-              cpu: 500m
-              memory: 2Gi
-            limits:
-              cpu: "2"
-              memory: 4Gi
-              
-    # ── Source 3: Loki microservices (Distributed mode) ──────────────────────
     - repoURL: https://grafana-community.github.io/helm-charts
       chart: loki
-      targetRevision: 14.0.0
+      targetRevision: 14.*
       helm:
         valuesObject:
-          global:
-            dnsService: rke2-coredns-rke2-coredns
-          deploymentMode: Distributed
           loki:
             auth_enabled: false
             commonConfig:
-              replication_factor: 3
-              path_prefix: /var/loki
+              replication_factor: 1
             schemaConfig:
               configs:
                 - from: "2024-04-01"
                   store: tsdb
-                  object_store: s3
+                  object_store: filesystem
                   schema: v13
                   index:
                     prefix: loki_index_
                     period: 24h
-            ingester:
-              wal:
-                enabled: true
-                dir: /var/loki/wal
-              lifecycler:
-                ring:
-                  replication_factor: 3
             pattern_ingester:
               enabled: true
             limits_config:
               allow_structured_metadata: true
               volume_enabled: true
-              retention_period: 744h           # 31 days
-              ingestion_rate_mb: 64
-              ingestion_burst_size_mb: 128
-              max_streams_per_user: 0          # unlimited (single tenant)
-              max_global_streams_per_user: 0
+              retention_period: 744h  # 31 days
             compactor:
               retention_enabled: true
-              delete_request_store: s3
+              delete_request_store: filesystem
               working_directory: /var/loki/compactor
             ruler:
               enable_api: true
-              storage:
-                type: s3
             storage:
-              type: s3
-              bucketNames:
-                chunks: loki-chunks
-                ruler: loki-ruler
-                admin: loki-admin
-              s3:
-                endpoint: http://loki-rustfs-svc:9000
-                region: us-east-1
-                accessKeyId: "${LOKI_S3_ACCESS_KEY_ID}"
-                secretAccessKey: "${LOKI_S3_SECRET_ACCESS_KEY}"
-                s3ForcePathStyle: true
-                insecure: true
-            structuredConfig:
-              ingester_client:
-                grpc_client_config:
-                  max_recv_msg_size: 104857600
-                  max_send_msg_size: 104857600
-          # ── Write path ────────────────────────────────────────────────────
-          distributor:
-            replicas: 3
-            extraArgs:
-              - -config.expand-env=true
-            extraEnvFrom:
-              - secretRef:
-                  name: loki-object-storage
-            affinity:
-              podAntiAffinity:
-                preferredDuringSchedulingIgnoredDuringExecution:
-                  - weight: 100
-                    podAffinityTerm:
-                      labelSelector:
-                        matchLabels:
-                          app.kubernetes.io/component: distributor
-                      topologyKey: kubernetes.io/hostname
-            resources:
-              requests:
-                cpu: 250m
-                memory: 512Mi
-              limits:
-                cpu: "1"
-                memory: 1Gi
-          ingester:
-            replicas: 3
-            extraArgs:
-              - -config.expand-env=true
-            extraEnvFrom:
-              - secretRef:
-                  name: loki-object-storage
-            persistence:
+              type: filesystem
+
+          monitoring:
+            serviceMonitor:
               enabled: true
-              storageClass: longhorn
-              size: 20Gi
-            affinity:
-              podAntiAffinity:
-                requiredDuringSchedulingIgnoredDuringExecution:
-                  - labelSelector:
-                      matchLabels:
-                        app.kubernetes.io/component: ingester
-                    topologyKey: kubernetes.io/hostname
-            resources:
-              requests:
-                cpu: 500m
-                memory: 2Gi
-              limits:
-                cpu: "2"
-                memory: 4Gi
-          patternIngester:
-            enabled: true
-            replicas: 2
-            extraArgs:
-              - -config.expand-env=true
-            extraEnvFrom:
-              - secretRef:
-                  name: loki-object-storage
-            affinity:
-              podAntiAffinity:
-                preferredDuringSchedulingIgnoredDuringExecution:
-                  - weight: 100
-                    podAffinityTerm:
-                      labelSelector:
-                        matchLabels:
-                          app.kubernetes.io/component: pattern-ingester
-                      topologyKey: kubernetes.io/hostname
-            resources:
-              requests:
-                cpu: 250m
-                memory: 512Mi
-              limits:
-                cpu: "1"
-                memory: 1Gi
-          # ── Read path ─────────────────────────────────────────────────────
-          queryFrontend:
-            replicas: 2
-            extraArgs:
-              - -config.expand-env=true
-            extraEnvFrom:
-              - secretRef:
-                  name: loki-object-storage
-            affinity:
-              podAntiAffinity:
-                preferredDuringSchedulingIgnoredDuringExecution:
-                  - weight: 100
-                    podAffinityTerm:
-                      labelSelector:
-                        matchLabels:
-                          app.kubernetes.io/component: query-frontend
-                      topologyKey: kubernetes.io/hostname
-            resources:
-              requests:
-                cpu: 250m
-                memory: 512Mi
-              limits:
-                cpu: "1"
-                memory: 1Gi
-          queryScheduler:
-            enabled: true
-            replicas: 2
-            extraArgs:
-              - -config.expand-env=true
-            extraEnvFrom:
-              - secretRef:
-                  name: loki-object-storage
-            resources:
-              requests:
-                cpu: 100m
-                memory: 256Mi
-              limits:
-                cpu: 500m
-                memory: 512Mi
-          querier:
-            replicas: 3
-            extraArgs:
-              - -config.expand-env=true
-            extraEnvFrom:
-              - secretRef:
-                  name: loki-object-storage
-            affinity:
-              podAntiAffinity:
-                preferredDuringSchedulingIgnoredDuringExecution:
-                  - weight: 100
-                    podAffinityTerm:
-                      labelSelector:
-                        matchLabels:
-                          app.kubernetes.io/component: querier
-                      topologyKey: kubernetes.io/hostname
-            resources:
-              requests:
-                cpu: 500m
-                memory: 1Gi
-              limits:
-                cpu: "2"
-                memory: 4Gi
-          indexGateway:
-            enabled: true
-            replicas: 2
-            extraArgs:
-              - -config.expand-env=true
-            extraEnvFrom:
-              - secretRef:
-                  name: loki-object-storage
-            persistence:
+            rules:
               enabled: true
-              storageClass: longhorn
-              size: 10Gi
-            affinity:
-              podAntiAffinity:
-                preferredDuringSchedulingIgnoredDuringExecution:
-                  - weight: 100
-                    podAffinityTerm:
-                      labelSelector:
-                        matchLabels:
-                          app.kubernetes.io/component: index-gateway
-                      topologyKey: kubernetes.io/hostname
-            resources:
-              requests:
-                cpu: 250m
-                memory: 512Mi
-              limits:
-                cpu: "1"
-                memory: 2Gi
-          # ── Backend / Singleton ──────────────────────────────────────────
-          compactor:
-            replicas: 1                        # MUST be 1 — concurrent compactors corrupt index
-            extraArgs:
-              - -config.expand-env=true
-            extraEnvFrom:
-              - secretRef:
-                  name: loki-object-storage
-            persistence:
+            dashboards:
               enabled: true
-              storageClass: longhorn
-              size: 10Gi
-            resources:
-              requests:
-                cpu: 250m
-                memory: 512Mi
-              limits:
-                cpu: "1"
-                memory: 2Gi
-          ruler:
-            enabled: true
-            replicas: 2
-            extraArgs:
-              - -config.expand-env=true
-            extraEnvFrom:
-              - secretRef:
-                  name: loki-object-storage
-            affinity:
-              podAntiAffinity:
-                preferredDuringSchedulingIgnoredDuringExecution:
-                  - weight: 100
-                    podAffinityTerm:
-                      labelSelector:
-                        matchLabels:
-                          app.kubernetes.io/component: ruler
-                      topologyKey: kubernetes.io/hostname
-            resources:
-              requests:
-                cpu: 100m
-                memory: 256Mi
-              limits:
-                cpu: 500m
-                memory: 1Gi
-          # ── SimpleScalable / monolithic components disabled ──────────────
+
+          minio:
+            enabled: false
+
+          deploymentMode: Monolithic
+
           singleBinary:
-            replicas: 0
-          write:
+            replicas: 1
+            persistence:
+              enabled: true
+              size: 80Gi
+
+          # Zero out replica counts of other deployment modes
+          backend:
             replicas: 0
           read:
             replicas: 0
-          backend:
+          write:
+            replicas: 0
+
+          ingester:
+            replicas: 0
+          querier:
+            replicas: 0
+          queryFrontend:
+            replicas: 0
+          queryScheduler:
+            replicas: 0
+          distributor:
+            replicas: 0
+          indexGateway:
             replicas: 0
           bloomCompactor:
             replicas: 0
           bloomGateway:
             replicas: 0
-          # ── Caches ──────────────────────────────────────────────────────
           chunksCache:
-            enabled: true
-            replicas: 1
-            allocatedMemory: 4096
-          resultsCache:
-            enabled: true
-            replicas: 1
-          # ── Gateway ─────────────────────────────────────────────────────
-          gateway:
-            enabled: true
-            replicas: 2
-            affinity:
-              podAntiAffinity:
-                preferredDuringSchedulingIgnoredDuringExecution:
-                  - weight: 100
-                    podAffinityTerm:
-                      labelSelector:
-                        matchLabels:
-                          app.kubernetes.io/component: gateway
-                      topologyKey: kubernetes.io/hostname
-          # ── Monitoring ──────────────────────────────────────────────────
-          monitoring:
-            serviceMonitor:
-              enabled: true
-              metricsInstance:
-                enabled: false
-            rules:
-              enabled: true
-            dashboards:
-              enabled: true
-            selfMonitoring:
-              enabled: false
-              grafanaAgent:
-                installOperator: false
-          minio:
-            enabled: false
-{{- end }}
+            allocatedMemory: 2000
+
