@@ -16,12 +16,15 @@ spec:
   sources:
     - repoURL: https://charts.jetstack.io
       chart: cert-manager
-      targetRevision: v1.16.1
+      # NOTE: check https://artifacthub.io/packages/helm/cert-manager/cert-manager for the latest stable
+      targetRevision: v1.20.2
       helm:
-        parameters:
-          - name: installCRDs
-            value: "true"
         valuesObject:
+          crds:
+            enabled: true
+          config:
+            # Enable Gateway API integration (beta since cert-manager 1.15, no feature flag needed since 1.15+)
+            enableGatewayAPI: true
           enableCertificateOwnerRef: true
           dns01RecursiveNameservers: 8.8.8.8:53,1.1.1.1:53
           dns01RecursiveNameserversOnly: true

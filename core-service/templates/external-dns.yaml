@@ -16,7 +16,8 @@ spec:
   sources:
     - repoURL: https://kubernetes-sigs.github.io/external-dns/
       chart: external-dns
-      targetRevision: 1.*
+      # NOTE: check https://artifacthub.io/packages/helm/external-dns/external-dns for the latest stable
+      targetRevision: 1.21.1
       helm:
         skipCrds: true
         releaseName: external-dns-parchment
@@ -31,13 +32,20 @@ spec:
                 secretKeyRef:
                   name: parchmentmc-cloudflare-api-token-secret
                   key: cloudflare_api_token
+          sources:
+            - service
+            - ingress
+            - gateway-httproute
+            - gateway-grpcroute
+            - gateway-tlsroute
           domainFilters:
             - parchmentmc.net
             - parchmentmc.org
           annotationFilter: "external-dns.alpha.kubernetes.io/target"
     - repoURL: https://kubernetes-sigs.github.io/external-dns/
       chart: external-dns
-      targetRevision: 1.*
+      # NOTE: check https://artifacthub.io/packages/helm/external-dns/external-dns for the latest stable
+      targetRevision: 1.21.1
       helm:
         releaseName: external-dns-hetzner
         valuesObject:
@@ -67,11 +75,18 @@ spec:
                     secretKeyRef:
                       name: hetzner-credentials
                       key: api-key
+          sources:
+            - service
+            - ingress
+            - gateway-httproute
+            - gateway-grpcroute
+            - gateway-tlsroute
           domainFilters:
             - ldtteam.com
             - minecolonies.com
             - hermans-code.com
             - chisels-and-bits.com
+            - communi-suggestu.com
           annotationFilter: "external-dns.alpha.kubernetes.io/target"
     - repoURL: {{ .Values.repository.url }}
       path: core-charts/external-dns-extras
