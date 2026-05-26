@@ -69,13 +69,9 @@ spec:
           # Traefik resolves ExtensionRef middlewares from the HTTPRoute's own
           # namespace, making cross-namespace references impossible — entrypoint-level
           # middleware is the correct architectural solution.
-          ports:
-            web:
-              middlewares:
-                - traefik-waf-crs@kubernetescrd
-            websecure:
-              middlewares:
-                - traefik-waf-crs@kubernetescrd
+          additionalArguments:
+            - "--entryPoints.web.http.middlewares=traefik-waf-crs@kubernetescrd"
+            - "--entryPoints.websecure.http.middlewares=traefik-waf-crs@kubernetescrd"
 
           gateway:
             annotations:
