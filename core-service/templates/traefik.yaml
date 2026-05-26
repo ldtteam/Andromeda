@@ -65,13 +65,12 @@ spec:
 
           ports:
             web:
-              port: :80
             websecure:
-              port: :443
               tls:
                 enabled: true
-              middlewares:
-                - waf-crs@kubernetescrd
+              http:
+                middlewares:
+                  - waf-crs@kubernetescrd
 
           gateway:
             annotations:
