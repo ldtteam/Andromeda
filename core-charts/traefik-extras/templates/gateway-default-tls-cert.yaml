@@ -1,0 +1,21 @@
+# Default wildcard TLS certificate for the Traefik Gateway "websecure" HTTPS listener.
+# cert-manager issues this via the letsencrypt-dns ClusterIssuer.
+# It acts as the fallback cert for any hostname on *.cluster.ldtteam.com that does
+# not supply its own certificate. Individual HTTPRoutes can reference their own
+# cert-manager-issued secrets via the Gateway listener's per-route cert selection.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: traefik-default-tls
+  namespace: traefik
+  labels:
+    app.kubernetes.io/part-of: traefik
+spec:
+  secretName: traefik-default-tls
+  issuerRef:
+    name: letsencrypt-dns
+    kind: ClusterIssuer
+  dnsNames:
+    - "cluster.ldtteam.com"
+    - "*.cluster.ldtteam.com"
+
