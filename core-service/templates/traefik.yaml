@@ -63,6 +63,22 @@ spec:
             kubernetesIngress:
               enabled: false
 
+          # Apply the WAF middleware globally at the entrypoint level so that
+          # all HTTP/HTTPS traffic is filtered by Coraza CRS automatically.
+          # This removes the need for per-route ExtensionRef filters in HTTPRoutes:
+          # Traefik resolves ExtensionRef middlewares from the HTTPRoute's own
+          # namespace, making cross-namespace references impossible — entrypoint-level
+          # middleware is the correct architectural solution.
+          entryPoints:
+            web:
+              http:
+                middlewares:
+                  - traefik-waf-crs@kubernetescrd
+            websecure:
+              http:
+                middlewares:
+                  - traefik-waf-crs@kubernetescrd
+
           gateway:
             annotations:
               external-dns.alpha.kubernetes.io/target: "cluster.ldtteam.com"
@@ -73,11 +89,19 @@ spec:
                 namespacePolicy:
                   from: All
               websecure:
+                # HTTPS listener — Traefik terminates TLS for HTTPRoutes.
+                # Traefik's router priority model ensures HTTP routers (from HTTPRoutes)
+                # beat the wildcard IngressRouteTCP HostSNI(*) catch-all for nginx:
+                # a specific hostname HTTP router always wins over a generic TCP
+                # HostSNI(*) router on the same entrypoint.
+                # nginx-served hosts with no HTTPRoute fall through to the passthrough.
                 port: 8443
-                protocol: TLS
+                protocol: HTTPS
                 namespacePolicy:
                   from: All
-                mode: Passthrough
+                certificateRefs:
+                  - name: traefik-default-tls
+                    namespace: traefik
 
           # Disable the dashboard — it will be added as a secured IngressRoute later.
           api:
