@@ -16,6 +16,7 @@ spec:
     - websecure
   routes:
     - match: HostSNI(`*`)
+      priority: -1000000
       services:
         - name: ingress-ingress-nginx-controller
           namespace: ingress-nginx
