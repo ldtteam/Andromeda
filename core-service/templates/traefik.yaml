@@ -77,18 +77,11 @@ spec:
               external-dns.alpha.kubernetes.io/target: "cluster.ldtteam.com"
             listeners:
               web:
-                port: 80
-                protocol: HTTP
                 namespacePolicy:
                   from: All
               websecure:
-                port: 443
-                protocol: HTTPS
                 namespacePolicy:
                   from: All
-                certificateRefs:
-                  - name: traefik-default-tls
-                    namespace: traefik
 
           # Disable the dashboard — it will be added as a secured IngressRoute later.
           api:
