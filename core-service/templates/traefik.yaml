@@ -67,7 +67,7 @@ spec:
             websecure:
               http:
                 middlewares:
-                  - waf-crs@kubernetescrd
+                  - traefik-waf-crs@kubernetescrd
 
           gateway:
             annotations:
