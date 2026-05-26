@@ -1,0 +1,14 @@
+# Reference WAF profiles in the traefik namespace.
+# App repos should create middleware objects with the same profile names in their own namespaces.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: waf-crs
+  namespace: traefik
+spec:
+  plugin:
+    coraza:
+      crsEnabled: true
+      directives:
+        - SecRuleEngine On
+        - SecRequestBodyAccess On
