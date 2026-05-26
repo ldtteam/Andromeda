@@ -87,10 +87,13 @@ spec:
                   - name: traefik-default-tls
                     namespace: traefik
 
-          # Disable the dashboard — it will be added as a secured IngressRoute later.
+          # Enable the dashboard on the internal traefik entrypoint (port 9000).
+          # It is NOT exposed externally — use kubectl port-forward to access it:
+          #   kubectl port-forward -n traefik svc/traefik 9000:9000
+          #   Then open http://localhost:9000/dashboard/
           api:
-            dashboard: false
-            insecure: false
+            dashboard: true
+            insecure: true
 
           experimental:
             plugins:
