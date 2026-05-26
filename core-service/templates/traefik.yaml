@@ -74,9 +74,11 @@ spec:
               external-dns.alpha.kubernetes.io/target: "cluster.ldtteam.com"
             listeners:
               web:
+                port: 8000
                 namespacePolicy:
                   from: All
               websecure:
+                port: 8443
                 namespacePolicy:
                   from: All
 
