@@ -64,11 +64,8 @@ spec:
               enabled: false
 
           ports:
-            web:
             websecure:
               http:
-                tls:
-                  enabled: true
                 middlewares:
                   - waf-crs@kubernetescrd
 
