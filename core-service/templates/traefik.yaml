@@ -83,6 +83,9 @@ spec:
                 protocol: HTTPS
                 namespacePolicy:
                   from: All
+                certificateRefs:
+                  - name: traefik-default-tls
+                    namespace: traefik
 
           # Disable the dashboard — it will be added as a secured IngressRoute later.
           api:
