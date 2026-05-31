@@ -65,12 +65,6 @@ spec:
               enabled: true
               ingressClass: "traefik"
 
-          ports:
-            websecure:
-              http:
-                middlewares:
-                  - traefik-waf-crs@kubernetescrd
-
           gateway:
             annotations:
               external-dns.alpha.kubernetes.io/target: "cluster.ldtteam.com"
@@ -97,11 +91,6 @@ spec:
             dashboard: true
             insecure: true
 
-          experimental:
-            plugins:
-              coraza:
-                moduleName: github.com/jcchavezs/coraza-http-wasm-traefik
-                version: v0.3.0
 
           metrics:
             prometheus:
